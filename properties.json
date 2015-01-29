@@ -1,0 +1,9 @@
+{
+  "errors": {
+      "PARSE_ERROR": "Jwt cannot be parsed",
+      "EXPIRED": "Jwt is expired",
+      "UNSUPPORTED_SIGNING_ALG": "Unsupported signing algorithm",
+      "UNSUPPORTED_SIGNING_TYPE": "Unsupported signing type",
+      "SIGNATURE_MISMTACH": "Signature verification failed"
+  }
+}
