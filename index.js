@@ -117,7 +117,7 @@ Jwt.prototype.signWith = function signWith(alg,key){
 Jwt.prototype.compact = function compact() {
 
   var key = this.signingKey;
-  var algorithm = this.algorithm;
+  var algorithm = this.signingAlgorithm;
   if (!key) {
     throw new Error('Require key');
   }
