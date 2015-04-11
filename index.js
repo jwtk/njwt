@@ -30,9 +30,14 @@ function base64urlUnescape(str) {
   return str.replace(/\-/g, '+').replace(/_/g, '/');
 }
 
+function isSupportedAlg(alg){
+  return !!algCryptoMap[alg];
+}
+
 function JwtError(data) {
   this.name = 'JwtError';
   this.userMessage = typeof data === 'string' ? data : (data || {}).userMessage;
+  this.message = this.userMessage;
 }
 util.inherits(JwtError, Error);
 
@@ -93,54 +98,49 @@ Jwt.prototype.setTtl = function setTtl(ttlSeconds) {
   return this;
 };
 
-Jwt.prototype.sign = function sign(input, key, method, type) {
+Jwt.prototype.sign = function sign(payload, jwsHeader, cyrptoInput) {
   var base64str;
-  if(type === 'hmac') {
-    base64str = crypto.createHmac(method, key).update(input).digest('base64');
-  }
-  else if(type === 'sign') {
-    base64str = crypto.createSign(method).update(input).sign(key, 'base64');
-  }
-  else {
-    throw new Error('Algorithm not supported');
-  }
+  var algorithm = jwsHeader.alg;
+  var cryptoAlgName = algCryptoMap[algorithm];
+  var signingType = algTypeMap[algorithm];
 
+  if(signingType === 'hmac') {
+    base64str = crypto.createHmac(cryptoAlgName, cyrptoInput).update(payload).digest('base64');
+  }
+  else if(signingType === 'sign') {
+    base64str = crypto.createSign(cryptoAlgName).update(payload).sign(cyrptoInput, 'base64');
+  }
   return base64urlEscape(base64str);
 };
 
 Jwt.prototype.signWith = function signWith(alg,key){
+  if(!this.isSupportedAlg(alg)){
+    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
+  }
   this.signingAlgorithm = alg;
   this.signingKey = key;
   return this;
 };
 
+Jwt.prototype.isSupportedAlg = isSupportedAlg;
+
 Jwt.prototype.compact = function compact() {
 
-  var key = this.signingKey;
-  var algorithm = this.signingAlgorithm;
-  if (!key) {
-    throw new Error('Require key');
-  }
-
-  if (!algorithm) {
-    algorithm = 'HS256';
-  }
-
-  var signingMethod = algCryptoMap[algorithm];
-  var signingType = algTypeMap[algorithm];
-  if(!signingMethod){
-    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
-  }
-  if(!signingType){
-    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_TYPE);
-  }
-
-  var header = { typ: 'JWT', alg: algorithm };
+  var header = { typ: 'JWT', alg: this.signingAlgorithm || 'none' };
 
   var segments = [];
   segments.push(new Buffer(JSON.stringify(header)).toString('base64'));
   segments.push(new Buffer(JSON.stringify(this.body.toJSON())).toString('base64'));
-  segments.push(this.sign(segments.join('.'), key, signingMethod, signingType));
+
+  if(header.alg !== 'none'){
+    if (this.signingKey) {
+      segments.push(this.sign(segments.join('.'), header, this.signingKey));
+    }else{
+      throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
+    }
+
+  }
+
 
   return segments.join('.');
 };
@@ -169,10 +169,15 @@ function Parser(options){
   }
   return this;
 }
-Parser.prototype.setSigningKey = function setSigningKey(keyStr) {
+Parser.prototype.setSigningKey = function setSigningKey(alg,keyStr) {
+  if(!this.isSupportedAlg(alg)){
+    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
+  }
+  this.signingAlgorithm = alg;
   this.signingKey = keyStr;
   return this;
 };
+Parser.prototype.isSupportedAlg = isSupportedAlg;
 Parser.prototype.safeJsonParse = function(input) {
   var result;
   try{
@@ -184,11 +189,11 @@ Parser.prototype.safeJsonParse = function(input) {
 };
 Parser.prototype.parseClaimsJws = function(claimsJwsStr,cb){
   var segments = claimsJwsStr.split('.');
-  if(segments.length!==3){
+  if(segments.length<2 || segments.length>3){
     return cb(new JwtError(properties.errors.PARSE_ERROR));
   }
 
-  var signature = segments[2];
+
   var header = this.safeJsonParse(segments[0]);
   var body = this.safeJsonParse(segments[1]);
 
@@ -207,12 +212,18 @@ Parser.prototype.parseClaimsJws = function(claimsJwsStr,cb){
   var signingMethod = algCryptoMap[header.alg];
   var signingType = algTypeMap[header.alg];
 
+  if(header.alg!==this.signingAlgorithm){
+    return cb(new JwtError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH));
+  }
+
   if(!signingMethod){
     return cb(new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG));
   }
   if(!signingType){
     return cb(new JwtError(properties.errors.UNSUPPORTED_SIGNING_TYPE));
   }
+
+  var signature = segments[2];
 
   var signingInput = [segments[0], segments[1]].join('.');
 

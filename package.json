@@ -4,7 +4,7 @@
   "description": "JWT Library for Node.js",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --timeout=5000 --reporter spec --check-leaks test/"
+    "test": "mocha --timeout=5000 --reporter spec --check-leaks -w ./*.js test/ "
   },
   "repository": {
     "type": "git",

@@ -34,7 +34,7 @@ describe('parseClaimsJws',function() {
       var result;
 
       before(function(done){
-        new nJwt.Parser().setSigningKey(pair.public).parseClaimsJws(token,function(err,res){
+        new nJwt.Parser().setSigningKey('RS256',pair.public).parseClaimsJws(token,function(err,res){
           result = [err,res];
           done();
         });
@@ -83,7 +83,7 @@ describe('parseClaimsJws',function() {
       var result;
 
       before(function(done){
-        new nJwt.Parser().setSigningKey(pair.public).parseClaimsJws(token,function(err,res){
+        new nJwt.Parser().setSigningKey('RS256',pair.public).parseClaimsJws(token,function(err,res){
           result = [err,res];
           done();
         });
@@ -91,7 +91,7 @@ describe('parseClaimsJws',function() {
 
       it('should return a signature mismatch error',function(){
         assert.isNotNull(result[0],'An error was not returned');
-        assert.equal(result[0].userMessage,properties.errors.SIGNATURE_MISMTACH);
+        assert.equal(result[0].userMessage,properties.errors.SIGNATURE_ALGORITHM_MISMTACH);
       });
     });
 
