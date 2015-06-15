@@ -72,6 +72,7 @@ function Jwt(claims){
   if(!(this instanceof Jwt)){
     return new Jwt(claims);
   }
+  this.header = { typ: 'JWT' };
   this.setSigningAlgorithm('none');
   this.body = new JwtBody(claims);
   this.body.iat = nowEpochSeconds();
@@ -106,7 +107,7 @@ Jwt.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
   if(!this.isSupportedAlg(alg)){
     throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
   }
-  this.signingAlgorithm = alg;
+  this.header.alg = alg;
   return this;
 };
 
@@ -129,21 +130,18 @@ Jwt.prototype.isSupportedAlg = isSupportedAlg;
 
 Jwt.prototype.compact = function compact() {
 
-  var header = { typ: 'JWT', alg: this.signingAlgorithm || 'none' };
-
   var segments = [];
-  segments.push(new Buffer(JSON.stringify(header)).toString('base64'));
+  segments.push(new Buffer(JSON.stringify(this.header)).toString('base64'));
   segments.push(new Buffer(JSON.stringify(this.body.toJSON())).toString('base64'));
 
-  if(header.alg !== 'none'){
+  if(this.header.alg !== 'none'){
     if (this.signingKey) {
-      segments.push(this.sign(segments.join('.'), header, this.signingKey));
+      this.signature = this.sign(segments.join('.'), this.header, this.signingKey);
+      segments.push(this.signature);
     }else{
       throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
     }
-
   }
-
 
   return segments.join('.');
 };
