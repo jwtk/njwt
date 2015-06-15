@@ -9,7 +9,7 @@ describe('Jwt()',function(){
     describe('if called with an unsupported algorithm',function(){
       it('should throw',function(){
         assert.throws(function(){
-          new nJwt.Jwt().signWith('unsupported');
+          new nJwt.Jwt().setSigningAlgorithm('unsupported');
         },properties.errors.UNSUPPORTED_SIGNING_ALG);
       });
     });

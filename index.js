@@ -97,6 +97,17 @@ Jwt.prototype.setTtl = function setTtl(ttlSeconds) {
   this.body.exp = nowEpochSeconds() + this.ttl;
   return this;
 };
+Jwt.prototype.setSigningKey = function setSigningKey(key) {
+  this.signingKey = key;
+  return this;
+};
+Jwt.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
+  if(!this.isSupportedAlg(alg)){
+    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
+  }
+  this.signingAlgorithm = alg;
+  return this;
+};
 
 Jwt.prototype.sign = function sign(payload, jwsHeader, cyrptoInput) {
   var base64str;
@@ -111,15 +122,6 @@ Jwt.prototype.sign = function sign(payload, jwsHeader, cyrptoInput) {
     base64str = crypto.createSign(cryptoAlgName).update(payload).sign(cyrptoInput, 'base64');
   }
   return base64urlEscape(base64str);
-};
-
-Jwt.prototype.signWith = function signWith(alg,key){
-  if(!this.isSupportedAlg(alg)){
-    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
-  }
-  this.signingAlgorithm = alg;
-  this.signingKey = key;
-  return this;
 };
 
 Jwt.prototype.isSupportedAlg = isSupportedAlg;
