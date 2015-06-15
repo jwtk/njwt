@@ -21,80 +21,77 @@ describe('JWT Builder',function(){
   });
 });
 
-describe('parseClaimsJws',function() {
+describe('a token that is signed with an RSA private key',function() {
 
+  var claims = {foo:'bar'};
+  var token = new nJwt.Jwt(claims).signWith('RS256',pair.private).compact();
 
+  describe('and a parser that is configurd with the RSA public key',function(){
 
-  describe('with a token that is signed with an RSA private key',function(){
-    var claims = {foo:'bar'};
-    var token = new nJwt.Jwt(claims).signWith('RS256',pair.private).compact();
+    var parser = new nJwt.Parser().setSigningKey('RS256',pair.public);
 
-    describe('and verified with the public key',function(){
+    var result;
 
-      var result;
-
-      before(function(done){
-        new nJwt.Parser().setSigningKey('RS256',pair.public).parseClaimsJws(token,function(err,res){
-          result = [err,res];
-          done();
-        });
-      });
-
-      it('should validate and return the token payload',function(){
-        assert.isNull(result[0],'An unexpected error was returned');
-        assert.isObject(result[1],'A result was not returned');
-        assert.equal(result[1].body.foo,claims.foo);
+    before(function(done){
+      parser.parseClaimsJws(token,function(err,res){
+        result = [err,res];
+        done();
       });
     });
 
-    /*
-
-    // The crypto library is throwing errors when i try to verify with
-    // the private key, why?
-
-    describe('and verified with the private key',function(){
-
-      var result;
-
-      before(function(done){
-        new nJwt.Parser().setSigningKey('RS256',pair.private).parseClaimsJws(token,function(err,res){
-          result = [err,res];
-          done();
-        });
-      });
-
-      it('should validate and return the token payload',function(){
-        assert.isNull(result[0],'An unexpected error was returned');
-        assert.isObject(result[1],'A result was not returned');
-        assert.equal(result[1].body.foo,claims.foo);
-      });
+    it('should validate and return the token payload',function(){
+      assert.isNull(result[0],'An unexpected error was returned');
+      assert.isObject(result[1],'A result was not returned');
+      assert.equal(result[1].body.foo,claims.foo);
     });
-
-    */
   });
 
+  // describe('and a parser that is configurd with the RSA private key',function(){
 
-  describe('with a token that is signed with an RSA public key',function(){
+  //   // The crypto library is throwing errors when i try to verify with
+  //   // the private key, why?
 
-    var token = new nJwt.Jwt({foo:'bar'}).signWith('HS256',pair.public).compact();
+  //   var parser = new nJwt.Parser().setSigningKey('RS256',pair.private);
 
-    describe('and verified with the public key and the header is maliciously set to HS256',function(){
+  //   var result;
 
-      var result;
+  //   before(function(done){
+  //     parser.parseClaimsJws(token,function(err,res){
+  //       result = [err,res];
+  //       done();
+  //     });
+  //   });
 
-      before(function(done){
-        new nJwt.Parser().setSigningKey('RS256',pair.public).parseClaimsJws(token,function(err,res){
-          result = [err,res];
-          done();
-        });
-      });
+  //   it('should validate and return the token payload',function(){
+  //     assert.isNull(result[0],'An unexpected error was returned');
+  //     assert.isObject(result[1],'A result was not returned');
+  //     assert.equal(result[1].body.foo,claims.foo);
+  //   });
+  // });
 
-      it('should return a signature mismatch error',function(){
-        assert.isNotNull(result[0],'An error was not returned');
-        assert.equal(result[0].userMessage,properties.errors.SIGNATURE_ALGORITHM_MISMTACH);
-      });
-    });
-
-  });
 });
 
+describe('a token that is signed with an RSA public key but header alg of HS256',function(){
+
+  var token = new nJwt.Jwt({foo:'bar'}).signWith('HS256',pair.public).compact();
+
+  describe('and a parser configured with RS256 and the same public key for vefification',function(){
+
+    var parser = new nJwt.Parser().setSigningKey('RS256',pair.public);
+
+    var result;
+
+    before(function(done){
+      parser.parseClaimsJws(token,function(err,res){
+        result = [err,res];
+        done();
+      });
+    });
+
+    it('should return SIGNATURE_ALGORITHM_MISMTACH error',function(){
+      assert.isNotNull(result[0],'An error was not returned');
+      assert.equal(result[0].message,properties.errors.SIGNATURE_ALGORITHM_MISMTACH);
+    });
+  });
+
+});
