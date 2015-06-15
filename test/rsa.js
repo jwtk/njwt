@@ -46,29 +46,6 @@ describe('a token that is signed with an RSA private key',function() {
     });
   });
 
-  // describe('and a parser that is configurd with the RSA private key',function(){
-
-  //   // The crypto library is throwing errors when i try to verify with
-  //   // the private key, why?
-
-  //   var parser = new nJwt.Parser().setSigningKey('RS256',pair.private);
-
-  //   var result;
-
-  //   before(function(done){
-  //     parser.parseClaimsJws(token,function(err,res){
-  //       result = [err,res];
-  //       done();
-  //     });
-  //   });
-
-  //   it('should validate and return the token payload',function(){
-  //     assert.isNull(result[0],'An unexpected error was returned');
-  //     assert.isObject(result[1],'A result was not returned');
-  //     assert.equal(result[1].body.foo,claims.foo);
-  //   });
-  // });
-
 });
 
 describe('a token that is signed with an RSA public key but header alg of HS256',function(){

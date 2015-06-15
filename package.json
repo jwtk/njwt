@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --timeout=5000 --reporter spec --check-leaks test/ ",
-    "test-watch": "mocha --timeout=5000 --reporter spec --check-leaks -w ./*.js test/ "
+    "test-watch": "mocha --timeout=5000 --reporter landing --check-leaks -w ./*.js test/ "
   },
   "repository": {
     "type": "git",
