@@ -72,7 +72,7 @@ function Jwt(claims){
   if(!(this instanceof Jwt)){
     return new Jwt(claims);
   }
-
+  this.setSigningAlgorithm('none');
   this.body = new JwtBody(claims);
   this.body.iat = nowEpochSeconds();
   return this;
@@ -90,7 +90,7 @@ Jwt.prototype.setIssuedAt = function setIssuedAt(iat) {
   return this;
 };
 Jwt.prototype.setExpiration = function setExpiration(exp) {
-  this.body.exp = exp;
+  this.body.exp = Math.floor((exp instanceof Date ? exp : new Date(exp)).getTime() / 1000);
   return this;
 };
 Jwt.prototype.setTtl = function setTtl(ttlSeconds) {
@@ -170,6 +170,7 @@ function Parser(options){
   if(!(this instanceof Parser)){
     return new Parser(options);
   }
+  this.setSigningAlgorithm('none');
   return this;
 }
 Parser.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
@@ -195,13 +196,17 @@ Parser.prototype.safeJsonParse = function(input) {
 };
 Parser.prototype.parse = function parse(jwt,cb){
   var segments = jwt.split('.');
+  var signature;
   if(segments.length<2 || segments.length>3){
     return cb(new JwtError(properties.errors.PARSE_ERROR));
   }
 
-
   var header = this.safeJsonParse(segments[0]);
   var body = this.safeJsonParse(segments[1]);
+
+  if(segments[2]){
+    signature = new Buffer(segments[2],'base64').toString('base64');
+  }
 
   if(header instanceof Error){
     return cb(new JwtError(properties.errors.PARSE_ERROR));
@@ -225,34 +230,28 @@ Parser.prototype.parse = function parse(jwt,cb){
   if(!signingMethod){
     return cb(new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG));
   }
-  if(!signingType){
-    return cb(new JwtError(properties.errors.UNSUPPORTED_SIGNING_TYPE));
-  }
 
   // This will add padding to the end of the incoming signautre.
   // The digest function below (createHmac) will add padding to
   // the digest that comes out, so we need them to both have padding
   // for comparison
 
-  var signature = new Buffer(segments[2],'base64').toString('base64');
-
-  var signingInput = [segments[0], segments[1]].join('.');
+  var digstInput = [segments[0], segments[1]].join('.');
 
   var verified, digest;
 
   if(signingType === 'hmac') {
     digest = crypto.createHmac(signingMethod, this.signingKey)
-      .update(signingInput)
+      .update(digstInput)
       .digest('base64');
     verified = ( signature === digest );
   }
   else if(signingType === 'sign') {
     verified = crypto.createVerify(signingMethod)
-      .update(signingInput)
+      .update(digstInput)
       .verify(this.signingKey, base64urlUnescape(signature), 'base64');
-  }
-  else {
-    return cb(new JwtError(properties.errors.UNSUPPORTED_SIGNING_TYPE));
+  }else if(signingMethod==='none'){
+    verified = true;
   }
 
   if ( verified ) {

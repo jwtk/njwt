@@ -19,9 +19,58 @@ describe('Parser().setSigningAlgorithm() ',function(){
 });
 
 describe('Parser().parse() ',function(){
+  describe('when configured to expect no verification',function(){
+
+    var parser = new nJwt.Parser();
+
+    var claims = {hello: uuid()};
+
+    describe('and given an unsigned token',function(){
+
+      var result;
+      var token = new nJwt.Jwt(claims).compact();
+
+      before(function(done){
+        parser.parse(token,function(err,res){
+          result = [err,res];
+          done();
+        });
+      });
+
+      it('should return the JWT object',function(){
+        assert.isNull(result[0],'An unexpcted error was returned');
+        assert.equal(result[1].body.hello,claims.hello);
+      });
+    });
+
+    describe('and given an expired token',function(){
+
+      var result;
+      var token = new nJwt.Jwt({expiredToken:'x'})
+        .setExpiration(new Date().getTime()-1000)
+        .compact();
+
+      before(function(done){
+        parser.parse(token,function(err,res){
+          result = [err,res];
+          done();
+        });
+      });
+
+      it('should return EXPIRED',function(){
+        assert.isNotNull(result[0],'An error was not returned');
+        assert.equal(result[0].userMessage,properties.errors.EXPIRED);
+      });
+    });
+
+  });
+
+
   describe('when configured to expect signature verification',function(){
 
-    var parser = new nJwt.Parser().setSigningKey('HS256','hello');
+    var parser = new nJwt.Parser()
+      .setSigningAlgorithm('HS256')
+      .setSigningKey('hello');
 
     describe('and given an unsigned token',function(){
 
