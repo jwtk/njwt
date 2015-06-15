@@ -171,11 +171,14 @@ function Parser(options){
   }
   return this;
 }
-Parser.prototype.setSigningKey = function setSigningKey(alg,keyStr) {
+Parser.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
   if(!this.isSupportedAlg(alg)){
     throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
   }
   this.signingAlgorithm = alg;
+  return this;
+};
+Parser.prototype.setSigningKey = function setSigningKey(keyStr) {
   this.signingKey = keyStr;
   return this;
 };

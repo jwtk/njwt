@@ -42,7 +42,9 @@ describe('a token that is signed with an RSA private key',function() {
 
   describe('and a parser that is configurd with the RSA public key',function(){
 
-    var parser = new nJwt.Parser().setSigningKey('RS256',pair.public);
+    var parser = new nJwt.Parser()
+      .setSigningAlgorithm('RS256')
+      .setSigningKey(pair.public);
 
     var result;
 

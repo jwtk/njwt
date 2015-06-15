@@ -5,11 +5,11 @@ var nJwt = require('../');
 var properties = require('../properties.json');
 
 describe('Parser()',function(){
-  describe('setSigningKey()',function(){
+  describe('setSigningAlgorithm()',function(){
     describe('if called with an unsupported algorithm',function(){
       it('should throw',function(){
         assert.throws(function(){
-          new nJwt.Parser().setSigningKey('unsupported');
+          new nJwt.Parser().setSigningAlgorithm('unsupported');
         },properties.errors.UNSUPPORTED_SIGNING_ALG);
       });
     });
