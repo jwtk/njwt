@@ -8,7 +8,8 @@ var algCryptoMap = {
   HS256: 'sha256',
   HS384: 'sha384',
   HS512: 'sha512',
-  RS256: 'RSA-SHA256'
+  RS256: 'RSA-SHA256',
+  none: 'none'
 };
 
 var algTypeMap = {
@@ -192,8 +193,8 @@ Parser.prototype.safeJsonParse = function(input) {
   }
   return result;
 };
-Parser.prototype.parseClaimsJws = function(claimsJwsStr,cb){
-  var segments = claimsJwsStr.split('.');
+Parser.prototype.parse = function parse(jwt,cb){
+  var segments = jwt.split('.');
   if(segments.length<2 || segments.length>3){
     return cb(new JwtError(properties.errors.PARSE_ERROR));
   }
@@ -228,14 +229,22 @@ Parser.prototype.parseClaimsJws = function(claimsJwsStr,cb){
     return cb(new JwtError(properties.errors.UNSUPPORTED_SIGNING_TYPE));
   }
 
-  var signature = segments[2];
+  // This will add padding to the end of the incoming signautre.
+  // The digest function below (createHmac) will add padding to
+  // the digest that comes out, so we need them to both have padding
+  // for comparison
+
+  var signature = new Buffer(segments[2],'base64').toString('base64');
 
   var signingInput = [segments[0], segments[1]].join('.');
 
-  var verified;
+  var verified, digest;
 
   if(signingType === 'hmac') {
-    verified = (signature === Jwt.prototype.sign(signingInput, this.signingKey, signingMethod, signingType));
+    digest = crypto.createHmac(signingMethod, this.signingKey)
+      .update(signingInput)
+      .digest('base64');
+    verified = ( signature === digest );
   }
   else if(signingType === 'sign') {
     verified = crypto.createVerify(signingMethod)
@@ -246,10 +255,10 @@ Parser.prototype.parseClaimsJws = function(claimsJwsStr,cb){
     return cb(new JwtError(properties.errors.UNSUPPORTED_SIGNING_TYPE));
   }
 
-  if (!verified) {
-    return cb(new JwtError(properties.errors.SIGNATURE_MISMTACH));
-  }else{
+  if ( verified ) {
     cb(null,new Jwt(body));
+  }else{
+    return cb(new JwtError(properties.errors.SIGNATURE_MISMTACH));
   }
 };
 

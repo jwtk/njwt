@@ -21,7 +21,7 @@ describe('JWT Builder',function(){
     var parser = new nJwt.Parser().setSigningKey('RS256',pair.public);
     var result;
     before(function(done){
-      parser.parseClaimsJws(token,function(err,res){
+      parser.parse(token,function(err,res){
         result = [err,res];
         done();
       });
@@ -49,7 +49,7 @@ describe('a token that is signed with an RSA private key',function() {
     var result;
 
     before(function(done){
-      parser.parseClaimsJws(token,function(err,res){
+      parser.parse(token,function(err,res){
         result = [err,res];
         done();
       });
@@ -78,7 +78,7 @@ describe('a token that is signed with an RSA public key but header alg of HS256'
     var result;
 
     before(function(done){
-      parser.parseClaimsJws(token,function(err,res){
+      parser.parse(token,function(err,res){
         result = [err,res];
         done();
       });

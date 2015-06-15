@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha --timeout=5000 --reporter spec --check-leaks test/ ",
-    "test-watch": "mocha --timeout=5000 --reporter landing --check-leaks -w ./*.js test/ "
+    "test-watch": "mocha --timeout=5000 --reporter landing --check-leaks -w ./*.js test/ ",
+    "test-debug": "mocha --timeout=5000 --debug --reporter landing --check-leaks -w ./*.js test/ "
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
   "devDependencies": {
     "mocha": "^2.2.3",
     "chai": "^2.2.0",
-    "ursa": "^0.8.4"
+    "ursa": "^0.8.4",
+    "uuid": "^2.0.1"
   }
 }
