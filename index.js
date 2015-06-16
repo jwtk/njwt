@@ -23,8 +23,13 @@ var algTypeMap = {
 function nowEpochSeconds(){
   return Math.floor(new Date().getTime()/1000);
 }
-function base64urlEscape(str) {
-  return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+
+function base64urlEncode(str) {
+  return new Buffer(str)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
 }
 
 function base64urlUnescape(str) {
@@ -66,7 +71,7 @@ JwtBody.prototype.toJSON = function() {
   },{});
 };
 JwtBody.prototype.compact = function compact(){
-  return new Buffer(JSON.stringify(this)).toString('base64');
+  return base64urlEncode(JSON.stringify(this));
 };
 
 function JwtHeader(header){
@@ -74,7 +79,7 @@ function JwtHeader(header){
   this.alg = header && header.alg || 'HS256';
 }
 JwtHeader.prototype.compact = function compact(){
-  return new Buffer(JSON.stringify(this)).toString('base64');
+  return base64urlEncode(JSON.stringify(this));
 };
 
 function Jwt(claims){
@@ -126,19 +131,20 @@ Jwt.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
   return this;
 };
 
-Jwt.prototype.sign = function sign(payload, jwsHeader, cyrptoInput) {
-  var base64str;
-  var algorithm = jwsHeader.alg;
-  var cryptoAlgName = algCryptoMap[algorithm];
-  var signingType = algTypeMap[algorithm];
+Jwt.prototype.sign = function sign(payload, alg, cyrptoInput) {
+  var buffer;
+
+  var cryptoAlgName = algCryptoMap[alg];
+  var signingType = algTypeMap[alg];
 
   if(signingType === 'hmac') {
-    base64str = crypto.createHmac(cryptoAlgName, cyrptoInput).update(payload).digest('base64');
+    buffer = crypto.createHmac(cryptoAlgName, cyrptoInput).update(payload).digest();
   }
   else if(signingType === 'sign') {
-    base64str = crypto.createSign(cryptoAlgName).update(payload).sign(cyrptoInput, 'base64');
+    buffer = crypto.createSign(cryptoAlgName).update(payload).sign(cyrptoInput);
   }
-  return base64urlEscape(base64str);
+
+  return base64urlEncode(buffer);
 };
 
 Jwt.prototype.isSupportedAlg = isSupportedAlg;
@@ -151,7 +157,7 @@ Jwt.prototype.compact = function compact() {
 
   if(this.header.alg !== 'none'){
     if (this.signingKey) {
-      this.signature = this.sign(segments.join('.'), this.header, this.signingKey);
+      this.signature = this.sign(segments.join('.'), this.header.alg, this.signingKey);
       segments.push(this.signature);
     }else{
       throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
@@ -325,6 +331,8 @@ var jwtLib = {
   Jwt: Jwt,
   Parser: Parser,
   Verifier: Verifier,
+  base64urlEncode: base64urlEncode,
+  base64urlUnescape:base64urlUnescape,
   verify: function(jwtString,secret,alg,cb){
     var args = Array.prototype.slice.call(arguments);
     var verifier = new Verifier();
