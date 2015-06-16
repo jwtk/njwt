@@ -21,7 +21,7 @@ var algTypeMap = {
 };
 
 function nowEpochSeconds(){
-  return Math.round(new Date().getTime()/1000);
+  return Math.floor(new Date().getTime()/1000);
 }
 function base64urlEscape(str) {
   return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
@@ -83,10 +83,10 @@ function Jwt(claims){
     return new Jwt(claims);
   }
   this.header = new JwtHeader();
-  this.setJti(uuid.v4());
   this.setSigningAlgorithm('none');
   this.body = new JwtBody(claims);
-  this.body.iat = nowEpochSeconds();
+  this.setJti(uuid.v4());
+  this.setIssuedAt(nowEpochSeconds());
   return this;
 }
 Jwt.prototype.setJti = function setJti(jti) {
@@ -336,9 +336,21 @@ var jwtLib = {
     }
     cb = args.pop();
     return verifier.verify(jwtString,cb);
+  },
+  create: function(claims,secret,alg){
+    var args = Array.prototype.slice.call(arguments);
+    var jwt = new Jwt(claims);
 
+    jwt.setSigningAlgorithm(args.length===3 ? alg : 'HS256');
 
+    if(jwt.header.alg!=='none' && !secret){
+      throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
+    }
+    if(args.length>2){
+      jwt.setSigningKey(secret);
+    }
 
+    return jwt;
   }
 };
 module.exports = jwtLib;
