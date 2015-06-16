@@ -73,12 +73,10 @@ describe('a token that is signed with an RSA public key but header alg of HS256'
 
   describe('and a verifier configured with RS256 and the same public key for vefification',function(){
 
-    var verifier = new nJwt.Verifier().setSigningKey('RS256',pair.public);
-
     var result;
 
     before(function(done){
-      verifier.verify(token,function(err,res){
+      nJwt.verify(token,pair.public,'RS256',function(err,res){
         result = [err,res];
         done();
       });

@@ -3,6 +3,7 @@
 var crypto = require('crypto');
 var util = require('util');
 var properties = require('./properties.json');
+var uuid = require('uuid');
 
 var algCryptoMap = {
   HS256: 'sha256',
@@ -82,11 +83,16 @@ function Jwt(claims){
     return new Jwt(claims);
   }
   this.header = new JwtHeader();
+  this.setJti(uuid.v4());
   this.setSigningAlgorithm('none');
   this.body = new JwtBody(claims);
   this.body.iat = nowEpochSeconds();
   return this;
 }
+Jwt.prototype.setJti = function setJti(jti) {
+  this.jti = jti;
+  return this;
+};
 Jwt.prototype.setSubject = function setSubject(sub) {
   this.body.sub = sub;
   return this;
@@ -231,7 +237,7 @@ function Verifier(){
   if(!(this instanceof Verifier)){
     return new Verifier();
   }
-  this.setSigningAlgorithm('none');
+  this.setSigningAlgorithm('HS256');
   return this;
 }
 Verifier.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
@@ -284,6 +290,8 @@ Verifier.prototype.verify = function verify(jwtString,cb){
     return cb(new JwtError(properties.errors.EXPIRED));
   }
 
+  // TODO add nbf checking
+
   var digstInput = [ header.compact(), body.compact()].join('.');
 
   var verified, digest;
@@ -317,13 +325,19 @@ var jwtLib = {
   Jwt: Jwt,
   Parser: Parser,
   Verifier: Verifier,
-  verify: function(jwtString,secret,alg,assertions,cb){
+  verify: function(jwtString,secret,alg,cb){
+    var args = Array.prototype.slice.call(arguments);
+    var verifier = new Verifier();
+    if(args.length>2){
+      verifier.setSigningKey(secret);
+    }
+    if(args.length>3){
+      verifier.setSigningAlgorithm(alg);
+    }
+    cb = args.pop();
+    return verifier.verify(jwtString,cb);
 
-    return new Verifier()
-      .setSigningAlgorithm(alg || 'HS256')
-      .setSigningKey(secret)
-      .setAssertions(assertions)
-      .verify(jwtString,cb);
+
 
   }
 };

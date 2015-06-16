@@ -21,7 +21,8 @@ describe('Verifier().setSigningAlgorithm() ',function(){
 describe('Verifier().verify() ',function(){
   describe('when configured to expect no verification',function(){
 
-    var verifier = new nJwt.Verifier();
+    var verifier = new nJwt.Verifier()
+      .setSigningAlgorithm('none');
 
     var claims = {hello: uuid()};
 
@@ -31,7 +32,7 @@ describe('Verifier().verify() ',function(){
       var token = new nJwt.Jwt(claims).compact();
 
       before(function(done){
-        nJwt.verify(token,null,'none',null,function(err,res){
+        verifier.verify(token,function(err,res){
           result = [err,res];
           done();
         });
@@ -60,6 +61,27 @@ describe('Verifier().verify() ',function(){
       it('should return EXPIRED',function(){
         assert.isNotNull(result[0],'An error was not returned');
         assert.equal(result[0].userMessage,properties.errors.EXPIRED);
+      });
+    });
+
+    describe('and given an signed token',function(){
+
+      var result;
+      var token = new nJwt.Jwt({foo:'bar'})
+        .setSigningAlgorithm('HS256')
+        .setSigningKey('foo')
+        .compact();
+
+      before(function(done){
+        verifier.verify(token,function(err,res){
+          result = [err,res];
+          done();
+        });
+      });
+
+      it('should return an unexpected algorithm error',function(){
+        assert.isNotNull(result[0],'An error was not returned');
+        assert.equal(result[0].userMessage,properties.errors.SIGNATURE_ALGORITHM_MISMTACH);
       });
     });
 
@@ -146,32 +168,6 @@ describe('Verifier().verify() ',function(){
 
   });
 
-  describe('when configured to expect no verification',function(){
-
-    var verifier = new nJwt.Verifier();
-
-    describe('and given an signed token',function(){
-
-      var result;
-      var token = new nJwt.Jwt({foo:'bar'})
-        .setSigningAlgorithm('HS256')
-        .setSigningKey('foo')
-        .compact();
-
-      before(function(done){
-        verifier.verify(token,function(err,res){
-          result = [err,res];
-          done();
-        });
-      });
-
-      it('should return an unexpected algorithm error',function(){
-        assert.isNotNull(result[0],'An error was not returned');
-        assert.equal(result[0].userMessage,properties.errors.SIGNATURE_ALGORITHM_MISMTACH);
-      });
-    });
-
-  });
 
 });
 
