@@ -18,10 +18,10 @@ describe('JWT Builder',function(){
       .setSigningAlgorithm('RS256')
       .setSigningKey(pair.private)
       .compact();
-    var parser = new nJwt.Parser().setSigningKey('RS256',pair.public);
+    var verifier = new nJwt.Verifier().setSigningKey('RS256',pair.public);
     var result;
     before(function(done){
-      parser.parse(token,function(err,res){
+      verifier.verify(token,function(err,res){
         result = [err,res];
         done();
       });
@@ -40,16 +40,16 @@ describe('a token that is signed with an RSA private key',function() {
     .setSigningKey(pair.private)
     .compact();
 
-  describe('and a parser that is configurd with the RSA public key',function(){
+  describe('and a verifier that is configurd with the RSA public key',function(){
 
-    var parser = new nJwt.Parser()
+    var verifier = new nJwt.Verifier()
       .setSigningAlgorithm('RS256')
       .setSigningKey(pair.public);
 
     var result;
 
     before(function(done){
-      parser.parse(token,function(err,res){
+      verifier.verify(token,function(err,res){
         result = [err,res];
         done();
       });
@@ -71,14 +71,14 @@ describe('a token that is signed with an RSA public key but header alg of HS256'
     .setSigningKey(pair.public)
     .compact();
 
-  describe('and a parser configured with RS256 and the same public key for vefification',function(){
+  describe('and a verifier configured with RS256 and the same public key for vefification',function(){
 
-    var parser = new nJwt.Parser().setSigningKey('RS256',pair.public);
+    var verifier = new nJwt.Verifier().setSigningKey('RS256',pair.public);
 
     var result;
 
     before(function(done){
-      parser.parse(token,function(err,res){
+      verifier.verify(token,function(err,res){
         result = [err,res];
         done();
       });

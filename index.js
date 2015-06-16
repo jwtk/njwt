@@ -64,15 +64,24 @@ JwtBody.prototype.toJSON = function() {
     return acc;
   },{});
 };
+JwtBody.prototype.compact = function compact(){
+  return new Buffer(JSON.stringify(this)).toString('base64');
+};
 
-
+function JwtHeader(header){
+  this.typ = header && header.typ || 'JWT';
+  this.alg = header && header.alg || 'HS256';
+}
+JwtHeader.prototype.compact = function compact(){
+  return new Buffer(JSON.stringify(this)).toString('base64');
+};
 
 function Jwt(claims){
 
   if(!(this instanceof Jwt)){
     return new Jwt(claims);
   }
-  this.header = { typ: 'JWT' };
+  this.header = new JwtHeader();
   this.setSigningAlgorithm('none');
   this.body = new JwtBody(claims);
   this.body.iat = nowEpochSeconds();
@@ -131,8 +140,8 @@ Jwt.prototype.isSupportedAlg = isSupportedAlg;
 Jwt.prototype.compact = function compact() {
 
   var segments = [];
-  segments.push(new Buffer(JSON.stringify(this.header)).toString('base64'));
-  segments.push(new Buffer(JSON.stringify(this.body.toJSON())).toString('base64'));
+  segments.push(this.header.compact());
+  segments.push(this.body.compact());
 
   if(this.header.alg !== 'none'){
     if (this.signingKey) {
@@ -156,7 +165,7 @@ Jwt.prototype.isValid = function() {
 };
 
 Jwt.prototype.isExpired = function() {
-  return new Date(this.exp*1000) < new Date();
+  return new Date(this.body.exp*1000) < new Date();
 };
 
 Jwt.prototype.getBody = function getBody() {
@@ -192,31 +201,73 @@ Parser.prototype.safeJsonParse = function(input) {
   }
   return result;
 };
-Parser.prototype.parse = function parse(jwt,cb){
-  var segments = jwt.split('.');
+Parser.prototype.parse = function parse(jwtString){
+  var segments = jwtString.split('.');
   var signature;
   if(segments.length<2 || segments.length>3){
-    return cb(new JwtError(properties.errors.PARSE_ERROR));
+    throw new JwtError(properties.errors.PARSE_ERROR);
   }
 
-  var header = this.safeJsonParse(segments[0]);
-  var body = this.safeJsonParse(segments[1]);
+  var header = new JwtHeader(this.safeJsonParse(segments[0]));
+  var body = new JwtBody(this.safeJsonParse(segments[1]));
 
   if(segments[2]){
     signature = new Buffer(segments[2],'base64').toString('base64');
   }
 
   if(header instanceof Error){
-    return cb(new JwtError(properties.errors.PARSE_ERROR));
+    throw new JwtError(properties.errors.PARSE_ERROR);
   }
   if(body instanceof Error){
-    return cb(new JwtError(properties.errors.PARSE_ERROR));
+    throw new JwtError(properties.errors.PARSE_ERROR);
+  }
+  var jwt = new Jwt(body);
+  jwt.setSigningAlgorithm(header.alg);
+  jwt.signature = signature;
+  return jwt;
+};
+
+function Verifier(){
+  if(!(this instanceof Verifier)){
+    return new Verifier();
+  }
+  this.setSigningAlgorithm('none');
+  return this;
+}
+Verifier.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
+  if(!this.isSupportedAlg(alg)){
+    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
+  }
+  this.signingAlgorithm = alg;
+  return this;
+};
+Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
+  this.signingKey = keyStr;
+  return this;
+};
+Verifier.prototype.isSupportedAlg = isSupportedAlg;
+Verifier.prototype.safeJsonParse = function(input) {
+  var result;
+  try{
+    result = JSON.parse(new Buffer(input,'base64'));
+  }catch(e){
+    return e;
+  }
+  return result;
+};
+Verifier.prototype.verify = function verify(jwtString,cb){
+
+  var jwt;
+
+  try{
+    jwt = new Parser().parse(jwtString);
+  }catch(e){
+    return cb(e);
   }
 
-  if(body.exp && (new Date(body.exp*1000) < new Date())){
-    return cb(new JwtError(properties.errors.EXPIRED));
-  }
-
+  var body = jwt.body;
+  var header = jwt.header;
+  var signature = jwt.signature;
 
   var signingMethod = algCryptoMap[header.alg];
   var signingType = algTypeMap[header.alg];
@@ -229,12 +280,11 @@ Parser.prototype.parse = function parse(jwt,cb){
     return cb(new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG));
   }
 
-  // This will add padding to the end of the incoming signautre.
-  // The digest function below (createHmac) will add padding to
-  // the digest that comes out, so we need them to both have padding
-  // for comparison
+  if(jwt.isExpired()){
+    return cb(new JwtError(properties.errors.EXPIRED));
+  }
 
-  var digstInput = [segments[0], segments[1]].join('.');
+  var digstInput = [ header.compact(), body.compact()].join('.');
 
   var verified, digest;
 
@@ -258,9 +308,23 @@ Parser.prototype.parse = function parse(jwt,cb){
     return cb(new JwtError(properties.errors.SIGNATURE_MISMTACH));
   }
 };
+Verifier.prototype.setAssertions = function setAssertions(){
+  // todo
+  return this;
+};
 
 var jwtLib = {
   Jwt: Jwt,
-  Parser: Parser
+  Parser: Parser,
+  Verifier: Verifier,
+  verify: function(jwtString,secret,alg,assertions,cb){
+
+    return new Verifier()
+      .setSigningAlgorithm(alg || 'HS256')
+      .setSigningKey(secret)
+      .setAssertions(assertions)
+      .verify(jwtString,cb);
+
+  }
 };
 module.exports = jwtLib;

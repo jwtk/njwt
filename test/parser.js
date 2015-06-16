@@ -6,22 +6,22 @@ var uuid = require('uuid');
 
 var properties = require('../properties.json');
 
-describe('Parser().setSigningAlgorithm() ',function(){
+describe('Verifier().setSigningAlgorithm() ',function(){
   describe('if called with an unsupported algorithm',function(){
 
     it('should throw UNSUPPORTED_SIGNING_ALG',function(){
       assert.throws(function(){
-        new nJwt.Parser().setSigningAlgorithm('unsupported');
+        new nJwt.Verifier().setSigningAlgorithm('unsupported');
       },properties.errors.UNSUPPORTED_SIGNING_ALG);
     });
 
   });
 });
 
-describe('Parser().parse() ',function(){
+describe('Verifier().verify() ',function(){
   describe('when configured to expect no verification',function(){
 
-    var parser = new nJwt.Parser();
+    var verifier = new nJwt.Verifier();
 
     var claims = {hello: uuid()};
 
@@ -31,7 +31,7 @@ describe('Parser().parse() ',function(){
       var token = new nJwt.Jwt(claims).compact();
 
       before(function(done){
-        parser.parse(token,function(err,res){
+        nJwt.verify(token,null,'none',null,function(err,res){
           result = [err,res];
           done();
         });
@@ -51,7 +51,7 @@ describe('Parser().parse() ',function(){
         .compact();
 
       before(function(done){
-        parser.parse(token,function(err,res){
+        verifier.verify(token,function(err,res){
           result = [err,res];
           done();
         });
@@ -68,7 +68,7 @@ describe('Parser().parse() ',function(){
 
   describe('when configured to expect signature verification',function(){
 
-    var parser = new nJwt.Parser()
+    var verifier = new nJwt.Verifier()
       .setSigningAlgorithm('HS256')
       .setSigningKey('hello');
 
@@ -78,7 +78,7 @@ describe('Parser().parse() ',function(){
       var token = new nJwt.Jwt({foo:'bar'}).compact();
 
       before(function(done){
-        parser.parse(token,function(err,res){
+        verifier.verify(token,function(err,res){
           result = [err,res];
           done();
         });
@@ -96,7 +96,7 @@ describe('Parser().parse() ',function(){
 
     var key = 'the key';
 
-    var parser = new nJwt.Parser()
+    var verifier = new nJwt.Verifier()
       .setSigningAlgorithm('HS256')
       .setSigningKey(key);
 
@@ -111,7 +111,7 @@ describe('Parser().parse() ',function(){
         .compact();
 
       before(function(done){
-        parser.parse(token,function(err,res){
+        verifier.verify(token,function(err,res){
           result = [err,res];
           done();
         });
@@ -132,7 +132,7 @@ describe('Parser().parse() ',function(){
         .compact();
 
       before(function(done){
-        parser.parse(token,function(err,res){
+        verifier.verify(token,function(err,res){
           result = [err,res];
           done();
         });
@@ -148,7 +148,7 @@ describe('Parser().parse() ',function(){
 
   describe('when configured to expect no verification',function(){
 
-    var parser = new nJwt.Parser();
+    var verifier = new nJwt.Verifier();
 
     describe('and given an signed token',function(){
 
@@ -159,7 +159,7 @@ describe('Parser().parse() ',function(){
         .compact();
 
       before(function(done){
-        parser.parse(token,function(err,res){
+        verifier.verify(token,function(err,res){
           result = [err,res];
           done();
         });
