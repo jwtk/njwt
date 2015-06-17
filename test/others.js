@@ -33,14 +33,6 @@ describe('this library',function () {
     });
   });
 
-  /*
-    // encode
-    var token = jwt.encode(payload, secret);
-
-    // decode
-    var decoded = jwt.decode(token, secret);
-   */
-
   it('should generate tokens that can be verified by jwt-simple',function(done){
     var key = uuid();
     var claims = {hello:uuid()};
