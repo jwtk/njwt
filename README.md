@@ -26,7 +26,7 @@ and "Audience" fields.
 ````javascript
 var uuid = require('uuid');
 var nJwt = require('nJwt');
-var signingKey = uuid.v4();
+var signingKey = uuid.v4(); // For example purposes
 
 var claims = {
   iss: "http://myapp.com/",  // The URL of your service
@@ -85,13 +85,23 @@ This library does the following checks when you call the `verify` method:
 To verify a previously issued token, use the `verify` method.  You must give it
 the same signing key that you are using to create tokens:
 ````javascript
-nJwt.verify(token,signingKey,function(err,jwt){
+nJwt.verify(token,signingKey,function(err,verifiedJwt){
   if(err){
     console.log(err); // Token has expired, has been tampered with, etc
   }else{
-    console.log(jwt); // Will contain the header and body
+    console.log(verifiedJwt); // Will contain the header and body
   }
 });
+````
+
+You can also use verify synchronously, in which case the errors will be thrown:
+
+````javascript
+try{
+  verifiedJwt = nJwt.verify(token,signingKey);
+}catch(e){
+  console.log(e);
+}
 ````
 
 #### Changing the algorithm
@@ -100,24 +110,27 @@ If you want to change the algorithm from the default `HS256`, you can do so
 by passing it as a third argument to the `create` or `verify` methods:
 
 ````javascript
-var jwt = nJwt.create(claims,signingKey,alg);
+var jwt = nJwt.create(claims,signingKey,'HS512');
 ````
 ````javascript
-nJwt.verify(token,signingKey, alg, callback);
+nJwt.verify(token,signingKey, 'HS512');
 ````
 
-See the table below for a list of algorithms.  If using RSA key pairs, the
-public key will be the signing key parameter.
+See the table below for a list of supported algorithms.  If using RSA key pairs,
+the public key will be the signing key parameter.
 
 #### Unsafe Parsing
 
 If you are debugging a JWT and need to see what's in it, *without* verifying it,
-you can use the parse method.  This method is **NOT SAFE** and should be used for
-debugging purposes ONLY:
+you can use the parse method.  This method is **NOT SAFE** and should be used
+for debugging purposes ONLY:
 
 ````javascript
 var decodedJwt = nJwt.parse(token);
 ````
+
+Similar to `verify`, this method will throw errors unless an optional callback
+is provided.
 
 ## Supported Algorithms
 

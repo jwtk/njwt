@@ -379,6 +379,9 @@ var jwtLib = {
     }
 
     return jwt;
+  },
+  parse: function parse(jwtString,cb){
+    return new Parser().parse(jwtString,cb);
   }
 };
 module.exports = jwtLib;
