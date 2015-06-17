@@ -95,7 +95,7 @@ function Jwt(claims){
   return this;
 }
 Jwt.prototype.setJti = function setJti(jti) {
-  this.jti = jti;
+  this.body.jti = jti;
   return this;
 };
 Jwt.prototype.setSubject = function setSubject(sub) {
@@ -207,7 +207,7 @@ Parser.prototype.isSupportedAlg = isSupportedAlg;
 Parser.prototype.safeJsonParse = function(input) {
   var result;
   try{
-    result = JSON.parse(new Buffer(input,'base64'));
+    result = JSON.parse(new Buffer(base64urlUnescape(input),'base64'));
   }catch(e){
     return e;
   }
@@ -224,7 +224,7 @@ Parser.prototype.parse = function parse(jwtString){
   var body = new JwtBody(this.safeJsonParse(segments[1]));
 
   if(segments[2]){
-    signature = new Buffer(segments[2],'base64').toString('base64');
+    signature = base64urlUnescape(segments[2]);
   }
 
   if(header instanceof Error){
@@ -236,6 +236,7 @@ Parser.prototype.parse = function parse(jwtString){
   var jwt = new Jwt(body);
   jwt.setSigningAlgorithm(header.alg);
   jwt.signature = signature;
+  jwt.verificationInput = segments[0] +'.' + segments[1];
   return jwt;
 };
 
@@ -298,7 +299,7 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
   // TODO add nbf checking
 
-  var digstInput = [ header.compact(), body.compact()].join('.');
+  var digstInput = jwt.verificationInput;
 
   var verified, digest;
 

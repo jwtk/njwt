@@ -116,7 +116,7 @@ describe('Verifier().verify() ',function(){
 
   describe('when configured to expect signature verification',function(){
 
-    var key = 'the key';
+    var key = uuid.v4();
 
     var verifier = new nJwt.Verifier()
       .setSigningAlgorithm('HS256')

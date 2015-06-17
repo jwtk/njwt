@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha --timeout=5000 --reporter spec --check-leaks test/ ",
     "test-watch": "mocha --timeout=5000 --reporter dot --check-leaks -w ./*.js test/ ",
-    "test-debug": "mocha --timeout=5000 --debug --reporter landing --check-leaks -w ./*.js test/ ",
+    "test-debug": "mocha --timeout=5000 --debug --reporter dot --check-leaks -w ./*.js test/ ",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --timeout=5000 --reporter dot --check-leaks test/"
   },
   "repository": {

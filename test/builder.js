@@ -46,10 +46,10 @@ describe('create()',function(){
       var nowUnix = Math.floor(new Date().getTime()/1000);
       assert.equal(nJwt.create({},uuid()).body.iat , nowUnix);
     });
-    // it('should create the jti field',function(){
-    //   var jwt = nJwt.create({},uuid());
-    //   assert(jwt.body.jti.match(/[a-zA-Z]+[-]/));
-    // });
+    it('should create the jti field',function(){
+      var jwt = nJwt.create({},uuid());
+      assert(jwt.body.jti.match(/[a-zA-Z]+[-]/));
+    });
 
   });
 
