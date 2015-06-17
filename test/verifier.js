@@ -6,6 +6,12 @@ var uuid = require('uuid');
 
 var properties = require('../properties.json');
 
+describe('Verifier',function(){
+  it('should construct itself if called without new',function(){
+    assert(nJwt.Verifier() instanceof nJwt.Verifier);
+  });
+});
+
 describe('Verifier().setSigningAlgorithm() ',function(){
   describe('if called with an unsupported algorithm',function(){
 

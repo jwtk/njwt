@@ -3,6 +3,12 @@ var nJwt = require('../');
 var uuid = require('uuid');
 var properties = require('../properties.json');
 
+describe('Parser',function(){
+  it('should construct itself if called without new',function(){
+    assert(nJwt.Parser() instanceof nJwt.Parser);
+  });
+});
+
 describe('parse() ',function(){
 
   it('should support sync usage',function(){

@@ -63,10 +63,9 @@ function handleError(cb,err,value){
   }
 }
 
-function JwtError(data) {
+function JwtError(message) {
   this.name = 'JwtError';
-  this.userMessage = typeof data === 'string' ? data : (data || {}).userMessage;
-  this.message = this.userMessage;
+  this.message = this.userMessage = message;
 }
 util.inherits(JwtError, Error);
 
@@ -189,21 +188,8 @@ Jwt.prototype.compact = function compact() {
   return segments.join('.');
 };
 
-
-Jwt.prototype.isValid = function() {
-  var self = this;
-  return Object.keys(self).reduce(function(acc,key){
-    acc[key] = self[key];
-    return acc;
-  },{});
-};
-
 Jwt.prototype.isExpired = function() {
   return new Date(this.body.exp*1000) < new Date();
-};
-
-Jwt.prototype.getBody = function getBody() {
-  return this.body;
 };
 
 
@@ -211,20 +197,9 @@ function Parser(options){
   if(!(this instanceof Parser)){
     return new Parser(options);
   }
-  this.setSigningAlgorithm('none');
   return this;
 }
-Parser.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
-  if(!this.isSupportedAlg(alg)){
-    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
-  }
-  this.signingAlgorithm = alg;
-  return this;
-};
-Parser.prototype.setSigningKey = function setSigningKey(keyStr) {
-  this.signingKey = keyStr;
-  return this;
-};
+
 Parser.prototype.isSupportedAlg = isSupportedAlg;
 Parser.prototype.safeJsonParse = function(input) {
   var result;
@@ -315,7 +290,6 @@ Verifier.prototype.verify = function verify(jwtString,cb){
     return done(new JwtError(properties.errors.EXPIRED));
   }
 
-  // TODO add nbf checking
 
   var digstInput = jwt.verificationInput;
 
@@ -350,6 +324,8 @@ Verifier.prototype.setAssertions = function setAssertions(){
 
 var jwtLib = {
   Jwt: Jwt,
+  JwtBody: JwtBody,
+  JwtHeader: JwtHeader,
   Parser: Parser,
   Verifier: Verifier,
   base64urlEncode: base64urlEncode,
