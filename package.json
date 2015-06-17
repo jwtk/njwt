@@ -22,13 +22,15 @@
     "url": "https://github.com/jwtk/njwt/issues"
   },
   "homepage": "https://github.com/jwtk/njwt",
-  "dependencies":{
+  "dependencies": {
     "uuid": "^2.0.1"
   },
   "devDependencies": {
     "mocha": "^2.2.3",
     "chai": "^2.2.0",
     "ursa": "^0.8.4",
-    "istanbul": "^0.3.15"
+    "istanbul": "^0.3.15",
+    "jsonwebtoken": "^5.0.2",
+    "jwt-simple": "^0.3.0"
   }
 }

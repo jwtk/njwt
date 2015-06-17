@@ -259,15 +259,7 @@ Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
   return this;
 };
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
-Verifier.prototype.safeJsonParse = function(input) {
-  var result;
-  try{
-    result = JSON.parse(new Buffer(input,'base64'));
-  }catch(e){
-    return e;
-  }
-  return result;
-};
+
 Verifier.prototype.verify = function verify(jwtString,cb){
 
   var jwt;
@@ -349,13 +341,12 @@ var jwtLib = {
   create: function(claims,secret,alg){
     var args = Array.prototype.slice.call(arguments);
     var jwt = new Jwt(claims);
-
     jwt.setSigningAlgorithm(args.length===3 ? alg : 'HS256');
 
     if(jwt.header.alg!=='none' && !secret){
       throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
     }
-    if(args.length>2){
+    if(args.length>1){
       jwt.setSigningKey(secret);
     }
 
