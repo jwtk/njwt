@@ -51,6 +51,18 @@ function isSupportedAlg(alg){
   return !!algCryptoMap[alg];
 }
 
+function handleError(cb,err,value){
+  if(typeof cb==='function'){
+    return process.nextTick(function() {
+      cb(err,value);
+    });
+  }else if(err){
+    throw err;
+  }else{
+    return value;
+  }
+}
+
 function JwtError(data) {
   this.name = 'JwtError';
   this.userMessage = typeof data === 'string' ? data : (data || {}).userMessage;
@@ -223,11 +235,12 @@ Parser.prototype.safeJsonParse = function(input) {
   }
   return result;
 };
-Parser.prototype.parse = function parse(jwtString){
+Parser.prototype.parse = function parse(jwtString,cb){
+  var done = handleError.bind(null,cb);
   var segments = jwtString.split('.');
   var signature;
   if(segments.length<2 || segments.length>3){
-    throw new JwtError(properties.errors.PARSE_ERROR);
+    return done(new JwtError(properties.errors.PARSE_ERROR));
   }
 
   var header = new JwtHeader(this.safeJsonParse(segments[0]));
@@ -239,16 +252,16 @@ Parser.prototype.parse = function parse(jwtString){
   }
 
   if(header instanceof Error){
-    throw new JwtError(properties.errors.PARSE_ERROR);
+    return done(new JwtError(properties.errors.PARSE_ERROR));
   }
   if(body instanceof Error){
-    throw new JwtError(properties.errors.PARSE_ERROR);
+    return done(new JwtError(properties.errors.PARSE_ERROR));
   }
   var jwt = new Jwt(body);
   jwt.setSigningAlgorithm(header.alg);
   jwt.signature = signature;
   jwt.verificationInput = segments[0] +'.' + segments[1];
-  return jwt;
+  return done(null,jwt);
 };
 
 function Verifier(){
@@ -271,26 +284,16 @@ Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
 };
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
 
-Verifier.prototype.handleError = function(cb,err){
-  if(typeof cb==='function'){
-    return process.nextTick(function() {
-      cb(err);
-    });
-  }else{
-    throw err;
-  }
-};
-
 Verifier.prototype.verify = function verify(jwtString,cb){
 
   var jwt;
 
-  var done = this.handleError.bind(cb);
+  var done = handleError.bind(null,cb);
 
   try{
     jwt = new Parser().parse(jwtString);
   }catch(e){
-    return done(cb,e);
+    return done(e);
   }
 
   var body = jwt.body;
@@ -301,15 +304,15 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var signingType = algTypeMap[header.alg];
 
   if(header.alg!==this.signingAlgorithm){
-    return done(cb,new JwtError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH));
+    return done(new JwtError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH));
   }
 
   if(!signingMethod){
-    return done(cb,new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG));
+    return done(new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG));
   }
 
   if(jwt.isExpired()){
-    return done(cb,new JwtError(properties.errors.EXPIRED));
+    return done(new JwtError(properties.errors.EXPIRED));
   }
 
   // TODO add nbf checking
@@ -335,9 +338,9 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var newJwt = new Jwt(body);
 
   if ( verified ) {
-    return cb ? cb(null,newJwt) : newJwt;
+    return done(null,newJwt);
   }else{
-    return cb(new JwtError(properties.errors.SIGNATURE_MISMTACH));
+    return done(new JwtError(properties.errors.SIGNATURE_MISMTACH));
   }
 };
 Verifier.prototype.setAssertions = function setAssertions(){
