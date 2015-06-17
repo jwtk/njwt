@@ -271,14 +271,26 @@ Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
 };
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
 
+Verifier.prototype.handleError = function(cb,err){
+  if(typeof cb==='function'){
+    return process.nextTick(function() {
+      cb(err);
+    });
+  }else{
+    throw err;
+  }
+};
+
 Verifier.prototype.verify = function verify(jwtString,cb){
 
   var jwt;
 
+  var done = this.handleError.bind(cb);
+
   try{
     jwt = new Parser().parse(jwtString);
   }catch(e){
-    return cb(e);
+    return done(cb,e);
   }
 
   var body = jwt.body;
@@ -289,15 +301,15 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var signingType = algTypeMap[header.alg];
 
   if(header.alg!==this.signingAlgorithm){
-    return cb(new JwtError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH));
+    return done(cb,new JwtError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH));
   }
 
   if(!signingMethod){
-    return cb(new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG));
+    return done(cb,new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG));
   }
 
   if(jwt.isExpired()){
-    return cb(new JwtError(properties.errors.EXPIRED));
+    return done(cb,new JwtError(properties.errors.EXPIRED));
   }
 
   // TODO add nbf checking
@@ -320,8 +332,10 @@ Verifier.prototype.verify = function verify(jwtString,cb){
     verified = true;
   }
 
+  var newJwt = new Jwt(body);
+
   if ( verified ) {
-    cb(null,new Jwt(body));
+    return cb ? cb(null,newJwt) : newJwt;
   }else{
     return cb(new JwtError(properties.errors.SIGNATURE_MISMTACH));
   }

@@ -19,6 +19,26 @@ describe('Verifier().setSigningAlgorithm() ',function(){
 });
 
 describe('Verifier().verify() ',function(){
+
+  it('should support sync usage',function(){
+    var verifier = new nJwt.Verifier()
+      .setSigningAlgorithm('none');
+    var claims = {hello: uuid()};
+    var token = new nJwt.Jwt(claims).compact();
+    var verifiedToken;
+    assert.doesNotThrow(function(){
+      verifiedToken = verifier.verify(token);
+    });
+
+    assert(verifiedToken instanceof nJwt.Jwt);
+    assert.equal(verifiedToken.body.hello,claims.hello);
+
+    assert.throws(function(){
+      verifiedToken = verifier.verify('invalid token');
+    },properties.errors.PARSE_ERROR);
+
+  });
+
   describe('when configured to expect no verification',function(){
 
     var verifier = new nJwt.Verifier()
