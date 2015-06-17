@@ -6,10 +6,12 @@ var properties = require('./properties.json');
 var uuid = require('uuid');
 
 var algCryptoMap = {
-  HS256: 'sha256',
-  HS384: 'sha384',
-  HS512: 'sha512',
+  HS256: 'SHA256',
+  HS384: 'SHA384',
+  HS512: 'SHA512',
   RS256: 'RSA-SHA256',
+  RS384: 'RSA-SHA384',
+  RS512: 'RSA-SHA512',
   none: 'none'
 };
 
@@ -17,7 +19,9 @@ var algTypeMap = {
   HS256: 'hmac',
   HS384: 'hmac',
   HS512: 'hmac',
-  RS256: 'sign'
+  RS256: 'sign',
+  RS384: 'sign',
+  RS512: 'sign'
 };
 
 function nowEpochSeconds(){
@@ -224,7 +228,8 @@ Parser.prototype.parse = function parse(jwtString){
   var body = new JwtBody(this.safeJsonParse(segments[1]));
 
   if(segments[2]){
-    signature = base64urlUnescape(segments[2]);
+    signature = new Buffer(base64urlUnescape(segments[2]),'base64')
+      .toString('base64');
   }
 
   if(header instanceof Error){

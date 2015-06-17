@@ -48,7 +48,7 @@ describe('create()',function(){
     });
     it('should create the jti field',function(){
       var jwt = nJwt.create({},uuid());
-      assert(jwt.body.jti.match(/[a-zA-Z]+[-]/));
+      assert(jwt.body.jti.match(/[a-zA-Z0-9]+[-]/));
     });
 
   });
