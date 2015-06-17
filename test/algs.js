@@ -25,22 +25,29 @@ function testHmacAlg(alg,done){
   });
 }
 
-function testRsaAlg(alg,done){
-  var pair = {
-    public: fs.readFileSync(path.join(__dirname,'rsa.pub'),'utf8'),
-    private: fs.readFileSync(path.join(__dirname,'rsa.priv'),'utf8')
-  };
+function testKeyAlg(alg,keyPair,done){
+
   var claims = { hello: uuid(), debug: true };
-  var jwt = nJwt.create(claims,pair.private,alg);
+  var jwt = nJwt.create(claims,keyPair.private,alg);
   var token = jwt.compact();
 
   itShouldBeAValidJwt(jwt);
-  nJwt.verify(token,pair.public,alg,function(err,jwt){
+  nJwt.verify(token,keyPair.public,alg,function(err,jwt){
     assert.isNull(err,'An unexpcted error was returned');
     itShouldBeAValidJwt(jwt);
     done();
   });
 }
+
+var rsaPair = {
+  public: fs.readFileSync(path.join(__dirname,'rsa.pub'),'utf8'),
+  private: fs.readFileSync(path.join(__dirname,'rsa.priv'),'utf8')
+};
+
+var ecdsaPair = {
+  public: fs.readFileSync(path.join(__dirname,'ecdsa.pub'),'utf8'),
+  private: fs.readFileSync(path.join(__dirname,'ecdsa.priv'),'utf8')
+};
 
 describe('this library',function () {
   it('should support creation and veification of HS256 JWT tokens',function(done){
@@ -53,12 +60,21 @@ describe('this library',function () {
     testHmacAlg('HS512',done);
   });
   it('should support creation and veification of RS256 JWT tokens',function(done){
-    testRsaAlg('RS256',done);
+    testKeyAlg('RS256',rsaPair,done);
   });
   it('should support creation and veification of RS384 JWT tokens',function(done){
-    testRsaAlg('RS384',done);
+    testKeyAlg('RS384',rsaPair,done);
   });
   it('should support creation and veification of RS512 JWT tokens',function(done){
-    testRsaAlg('RS512',done);
+    testKeyAlg('RS512',rsaPair,done);
+  });
+  it('should support creation and veification of ES256 JWT tokens',function(done){
+    testKeyAlg('ES256',ecdsaPair,done);
+  });
+  it('should support creation and veification of ES384 JWT tokens',function(done){
+    testKeyAlg('ES384',ecdsaPair,done);
+  });
+  it('should support creation and veification of ES512 JWT tokens',function(done){
+    testKeyAlg('ES512',ecdsaPair,done);
   });
 });
