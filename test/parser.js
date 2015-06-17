@@ -9,6 +9,20 @@ describe('Parser',function(){
   });
 });
 
+describe('Parser().parse()',function(){
+  it('should return PARSE_ERROR if the header is not JSON',function(){
+    assert.throws(function(){
+      nJwt.Parser().parse("noavalidheader.notavalidbody");
+    },properties.errors.PARSE_ERROR);
+  });
+  it('should return PARSE_ERROR if the body is not JSON',function(){
+    var header = nJwt.JwtHeader({type:'JWT',alg:'HS256'}).compact();
+    assert.throws(function(){
+      nJwt.Parser().parse(header+".notavalidbody");
+    },properties.errors.PARSE_ERROR);
+  });
+});
+
 describe('parse() ',function(){
 
   it('should support sync usage',function(){

@@ -96,8 +96,12 @@ JwtBody.prototype.compact = function compact(){
 };
 
 function JwtHeader(header){
+  if(!(this instanceof JwtHeader)){
+    return new JwtHeader(header);
+  }
   this.typ = header && header.typ || 'JWT';
   this.alg = header && header.alg || 'HS256';
+  return this;
 }
 JwtHeader.prototype.compact = function compact(){
   return base64urlEncode(JSON.stringify(this));
@@ -133,11 +137,6 @@ Jwt.prototype.setIssuedAt = function setIssuedAt(iat) {
 };
 Jwt.prototype.setExpiration = function setExpiration(exp) {
   this.body.exp = Math.floor((exp instanceof Date ? exp : new Date(exp)).getTime() / 1000);
-  return this;
-};
-Jwt.prototype.setTtl = function setTtl(ttlSeconds) {
-  this.ttl = ttlSeconds;
-  this.body.exp = nowEpochSeconds() + this.ttl;
   return this;
 };
 Jwt.prototype.setSigningKey = function setSigningKey(key) {
@@ -211,15 +210,17 @@ Parser.prototype.safeJsonParse = function(input) {
   return result;
 };
 Parser.prototype.parse = function parse(jwtString,cb){
+
   var done = handleError.bind(null,cb);
   var segments = jwtString.split('.');
   var signature;
+
   if(segments.length<2 || segments.length>3){
     return done(new JwtError(properties.errors.PARSE_ERROR));
   }
 
-  var header = new JwtHeader(this.safeJsonParse(segments[0]));
-  var body = new JwtBody(this.safeJsonParse(segments[1]));
+  var header = this.safeJsonParse(segments[0]);
+  var body = this.safeJsonParse(segments[1]);
 
   if(segments[2]){
     signature = new Buffer(base64urlUnescape(segments[2]),'base64')
@@ -316,10 +317,6 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   }else{
     return done(new JwtError(properties.errors.SIGNATURE_MISMTACH));
   }
-};
-Verifier.prototype.setAssertions = function setAssertions(){
-  // todo
-  return this;
 };
 
 var jwtLib = {
