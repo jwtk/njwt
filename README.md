@@ -7,13 +7,14 @@
 [![Build Status](https://img.shields.io/travis/jwtk/njwt.svg?style=flat)](https://travis-ci.org/jwtk/njwt)
 [![Coverage Status](https://coveralls.io/repos/jwtk/njwt/badge.svg?branch=master)](https://coveralls.io/r/jwtk/njwt?branch=master)
 
-This Node.js library allows you create and verify JWTs.  We've made the process
-incredibly simple by choosing secure defaults for you, while still allowing you
-modify the creation and verification steps if desired.
+nJwt is the cleanest JSON Web Token (JWT) library for Node.js developers. nJwt
+removes all the complexities around JWTs, and gives you a simple, intuitive API,
+that allows you to securely make and use JWTs in your applications without
+needing to read [rfc7519](http://www.rfc-editor.org/rfc/rfc7519.txt).
 
 ### Creating Secure, Signed JWTs
 
-JWTs expect "claims", they a set of assertions about who the user is and what
+JWTs expect *"claims"*, they a set of assertions about who the user is and what
 they can do.  The most common use case for JWTs is to declare the "scope" of the
 access token, which is a list of things that the holder of the token (the user)
 is allowed to do.
