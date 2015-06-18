@@ -5,7 +5,7 @@
 [![NPM Version](https://img.shields.io/npm/v/njwt.svg?style=flat)](https://npmjs.org/package/njwt)
 [![NPM Downloads](http://img.shields.io/npm/dm/njwt.svg?style=flat)](https://npmjs.org/package/njwt)
 [![Build Status](https://img.shields.io/travis/jwtk/njwt.svg?style=flat)](https://travis-ci.org/jwtk/njwt)
-
+[![Coverage Status](https://coveralls.io/repos/jwtk/njwt/badge.svg)](https://coveralls.io/r/jwtk/njwt)
 
 This Node.js library allows you create and verify JWTs.  We've made the process
 incredibly simple by choosing secure defaults for you, while still allowing you
