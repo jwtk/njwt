@@ -141,12 +141,13 @@ describe('Verifier().verify() ',function(){
     describe('and given an expired token',function(){
 
       var result;
-      var token = new nJwt.Jwt({expiredToken:'x'})
-        .setExpiration(new Date().getTime()-1000)
-        .compact();
+      var jwt = new nJwt.Jwt({expiredToken:'x'})
+        .setExpiration(new Date().getTime()-1000);
+
 
       before(function(done){
-        verifier.verify(token,function(err,res){
+        debugger
+        verifier.verify(jwt.compact(),function(err,res){
           result = [err,res];
           done();
         });

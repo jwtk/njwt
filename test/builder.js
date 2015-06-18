@@ -46,6 +46,10 @@ describe('create()',function(){
       var nowUnix = Math.floor(new Date().getTime()/1000);
       assert.equal(nJwt.create({},uuid()).body.iat , nowUnix);
     });
+    it('should create the exp field, defaulted to 1 hour',function(){
+      var oneHourFromNow = Math.floor(new Date().getTime()/1000) + (60*60);
+      assert.equal(nJwt.create({},uuid()).body.exp , oneHourFromNow);
+    });
     it('should create the jti field',function(){
       var jwt = nJwt.create({},uuid());
       assert(jwt.body.jti.match(/[a-zA-Z0-9]+[-]/));

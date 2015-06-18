@@ -21,7 +21,7 @@ describe('Jwt',function() {
     });
   });
 
-  describe('.setIssuer()',function(){
+  describe('.setExpiration()',function(){
     it('should accept Date types and set the exp claim to a UNIX timestamp value',function(){
       var future = new Date('2025');
       assert.equal(
@@ -36,9 +36,19 @@ describe('Jwt',function() {
         future/1000
       );
     });
+    it('should allow me to remove the exp field',function(){
+      var jwt = nJwt.create({},uuid());
+      var oneHourFromNow = Math.floor(new Date().getTime()/1000) + (60*60);
+      assert.equal(nJwt.create({},uuid()).body.exp , oneHourFromNow);
+      assert.equal(jwt.setExpiration().body.exp, undefined);
+      assert.equal(jwt.setExpiration(false).body.exp, undefined);
+      assert.equal(jwt.setExpiration(null).body.exp, undefined);
+      assert.equal(jwt.setExpiration(0).body.exp, undefined);
+    });
   });
 
-  describe('.compact()',function(){
+
+  describe('.setSigningAlgorithm()',function(){
     it('should throw if you specify an alg but not a key',function(){
       assert.throws(function(){
         nJwt.Jwt().setSigningAlgorithm('HS256').compact();

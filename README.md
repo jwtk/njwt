@@ -11,7 +11,7 @@ This Node.js library allows you create and verify JWTs.  We've made the process
 incredibly simple by choosing secure defaults for you, while still allowing you
 modify the creation and verification steps if desired.
 
-#### Creating Secure, Signed JWTs
+### Creating Secure, Signed JWTs
 
 JWTs expect "claims", they a set of assertions about who the user is and what
 they can do.  The most common use case for JWTs is to declare the "scope" of the
@@ -25,6 +25,10 @@ signing tokens.  We use the `HS256` algorithm by default.
 While the claims are completely up to you, we do recommend setting the "Subject"
 and "Audience" fields.
 
+JWTs commonly contain the `iat` and `exp` claims, which declare the time the
+token was issued and when it expires.  Our library will create these for you,
+with a default expiration of 1 hour.
+
 ````javascript
 var uuid = require('uuid');
 var nJwt = require('nJwt');
@@ -33,7 +37,7 @@ var signingKey = uuid.v4(); // For example purposes
 var claims = {
   iss: "http://myapp.com/",  // The URL of your service
   sub: "users/user1234",    // The UID of the user in your system
-  scope: ['self','admins']
+  scope: "self, admins"
 }
 
 var jwt = nJwt.create(claims,signingKey)
@@ -53,6 +57,8 @@ console.log(jwt);
   },
   "body": {
     "jti": "c84280e6-0021-4e69-ad76-7a3fdd3d4ede",
+    "iat": 1434660338,
+    "exp": 1434663938,
     "iss": "http://myapp.com/",
     "sub": "users/user1234",
     "scope": ["self","admins"]
@@ -74,7 +80,7 @@ console.log(token);
 eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJmb28iOiJiYXIiLCJpYXQiOjE0MzQ0Nzk4ODN9.HQyx15jWm1upqsrKSf89X_iP0sg7N46a9pqBVGPMYdiqZeuU_ZZOdU-zizHJoIHMIJxtEWzpSMaVubJW0AJsTqjqQf6GoJ4cmFAfmfUFXmMC4Xv5oc4UqvGizpoLjfZedd834PcwbS-WskZcL4pVNmBIGRtDXkoU1j2X1P5M_sNJ9lYZ5vITyqe4MYJovQzNdQziUNhcMI5wkXncV7XzGInBeQsPquASWVG4gb3Y--k1P3xWA4Df3rKeEQBbInDKXczvDpfIlTojx4Ch8OM8vXWWNxW-mIQrV31wRrS9XtNoig7irx8N0MzokiYKrQ8WP_ezPicHvVPIHhz-InOw
 ````
 
-#### Verifying Signed JWTs
+### Verifying Signed JWTs
 
 The end user will use their JWT to authenticate themselves with your service.
 When they present the JWT, you want to check the token to ensure that it's valid.
@@ -110,7 +116,7 @@ try{
 }
 ````
 
-#### Changing the algorithm
+### Changing the algorithm
 
 If you want to change the algorithm from the default `HS256`, you can do so
 by passing it as a third argument to the `create` or `verify` methods:
@@ -124,6 +130,43 @@ nJwt.verify(token,signingKey, 'HS512');
 
 See the table below for a list of supported algorithms.  If using RSA key pairs,
 the public key will be the signing key parameter.
+
+### Customizing the token
+
+While we've chosen secure, sensible defaults for you, you may need to change it
+up.
+
+#### Claims
+
+If you need to provide custom claims, simply supply them to the `create` method
+or add them manually to the claims body after JWT is created.  These two
+examples create the same claims body:
+
+```javascript
+var claims = {
+  scope: 'admins'
+}
+var jwt = nJwt.create(claims,secret);
+````
+```javascript
+var jwt = nJwt.create({},secret);
+jwt.body.scope = 'admins';
+````
+
+#### Expiration Claim
+
+A convenience method is supplied for modifying the `exp` claim.  You can modify
+the `exp` claim by passing a `Date` object, or a millisecond value, to the
+`setExpiration` method:
+
+```javascript
+var jwt = nJwt.create(claims,secret);
+
+jwt.setExpiration(new Date('2015-07-01')); // A specific date
+jwt.setExpiration(new Date().getTime() + (60*60*1000)); // One hour from now
+jwt.setExpiration(); // Remove the exp claim
+```
+
 
 ## Supported Algorithms
 

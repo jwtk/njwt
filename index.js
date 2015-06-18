@@ -143,7 +143,12 @@ Jwt.prototype.setIssuedAt = function setIssuedAt(iat) {
   return this;
 };
 Jwt.prototype.setExpiration = function setExpiration(exp) {
-  this.body.exp = Math.floor((exp instanceof Date ? exp : new Date(exp)).getTime() / 1000);
+  if(exp){
+    this.body.exp = Math.floor((exp instanceof Date ? exp : new Date(exp)).getTime() / 1000);
+  }else{
+    delete this.body.exp;
+  }
+
   return this;
 };
 Jwt.prototype.setSigningKey = function setSigningKey(key) {
@@ -367,7 +372,7 @@ var jwtLib = {
       jwt.setSigningAlgorithm(args.length===3 ? alg : 'HS256');
       jwt.setSigningKey(secret);
     }
-
+    jwt.setExpiration((nowEpochSeconds() + (60*60))*1000); // one hour
     return jwt;
   }
 };
