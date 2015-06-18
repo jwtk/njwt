@@ -20,6 +20,16 @@ describe('Jwt()',function(){
 
 describe('create()',function(){
 
+  it('should throw SIGNING_KEY_REQUIRED if passed no options',function(){
+    assert.throws(function(){
+      nJwt.create();
+    },properties.errors.SIGNING_KEY_REQUIRED);
+  });
+
+  it('should create a default token if the scret is the only value',function(){
+    assert(nJwt.create(uuid()) instanceof nJwt.Jwt);
+  });
+
   it('should throw if using defaults without a secret key',function(){
     assert.throws(function(){
       nJwt.create({});

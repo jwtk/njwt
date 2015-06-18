@@ -364,8 +364,15 @@ var jwtLib = {
   },
   create: function(claims,secret,alg){
     var args = Array.prototype.slice.call(arguments);
-    var jwt = new Jwt(claims);
-
+    var jwt;
+    if(args.length >= 2){
+      jwt = new Jwt(claims);
+    }else if (args.length===1 && typeof claims === 'string'){
+      jwt = new Jwt({});
+      secret = claims;
+    }else{
+      jwt = new Jwt(claims);
+    }
     if(alg!=='none' && !secret){
       throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
     }else{
