@@ -4,7 +4,10 @@
   "description": "JWT Library for Node.js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --timeout=5000 --reporter spec --check-leaks test/ ",
+    "test-watch": "mocha --timeout=5000 --reporter dot --check-leaks -w ./*.js test/ ",
+    "test-debug": "mocha --timeout=5000 --debug --reporter dot --check-leaks -w ./*.js test/ ",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --timeout=5000 --reporter dot --check-leaks test/"
   },
   "repository": {
     "type": "git",
@@ -18,5 +21,16 @@
   "bugs": {
     "url": "https://github.com/jwtk/njwt/issues"
   },
-  "homepage": "https://github.com/jwtk/njwt"
+  "homepage": "https://github.com/jwtk/njwt",
+  "dependencies": {
+    "uuid": "^2.0.1"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.3",
+    "chai": "^2.2.0",
+    "ursa": "^0.8.4",
+    "istanbul": "^0.3.15",
+    "jsonwebtoken": "^5.0.2",
+    "jwt-simple": "^0.3.0"
+  }
 }
