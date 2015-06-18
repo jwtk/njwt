@@ -121,19 +121,6 @@ nJwt.verify(token,signingKey, 'HS512');
 See the table below for a list of supported algorithms.  If using RSA key pairs,
 the public key will be the signing key parameter.
 
-#### Unsafe Parsing
-
-If you are debugging a JWT and need to see what's in it, *without* verifying it,
-you can use the parse method.  This method is **NOT SAFE** and should be used
-for debugging purposes ONLY:
-
-````javascript
-var decodedJwt = nJwt.parse(token);
-````
-
-Similar to `verify`, this method will throw errors unless an optional callback
-is provided.
-
 ## Supported Algorithms
 
 "alg" Value | Algorithm used
