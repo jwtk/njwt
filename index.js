@@ -69,7 +69,14 @@ function JwtError(message) {
 }
 util.inherits(JwtError, Error);
 
-module.exports = JwtError;
+function JwtParseError(message,jwtString,parsedHeader,parsedBody) {
+  this.name = 'JwtParseError';
+  this.message = this.userMessage = message;
+  this.jwtString = jwtString;
+  this.parsedHeader = parsedHeader;
+  this.parsedBody = parsedBody;
+}
+util.inherits(JwtParseError, Error);
 
 function JwtBody(claims){
   if(!(this instanceof JwtBody)){
@@ -217,7 +224,7 @@ Parser.prototype.parse = function parse(jwtString,cb){
   var signature;
 
   if(segments.length<2 || segments.length>3){
-    return done(new JwtError(properties.errors.PARSE_ERROR));
+    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,null,null));
   }
 
   var header = this.safeJsonParse(segments[0]);
@@ -229,10 +236,10 @@ Parser.prototype.parse = function parse(jwtString,cb){
   }
 
   if(header instanceof Error){
-    return done(new JwtError(properties.errors.PARSE_ERROR));
+    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,null,null));
   }
   if(body instanceof Error){
-    return done(new JwtError(properties.errors.PARSE_ERROR));
+    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,header,null));
   }
   var jwt = new Jwt(body);
   jwt.setSigningAlgorithm(header.alg);
@@ -281,11 +288,11 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var signingType = algTypeMap[header.alg];
 
   if(header.alg!==this.signingAlgorithm){
-    return done(new JwtError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH));
+    return done(new JwtParseError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH,jwtString,header,body));
   }
 
   if(jwt.isExpired()){
-    return done(new JwtError(properties.errors.EXPIRED));
+    return done(new JwtParseError(properties.errors.EXPIRED,jwtString,header,body));
   }
 
 
@@ -314,7 +321,7 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   if ( verified ) {
     return done(null,newJwt);
   }else{
-    return done(new JwtError(properties.errors.SIGNATURE_MISMTACH));
+    return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body));
   }
 };
 

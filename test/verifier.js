@@ -52,11 +52,29 @@ describe('.verify()',function(){
     },properties.errors.PARSE_ERROR);
   });
 
+  it('should give me the original string on the parse error object',function(done){
+    var invalidJwt = 'noavalidheader.notavalidbody';
+    nJwt.verify(invalidJwt,function(err){
+      assert.equal(err.jwtString, invalidJwt);
+      done();
+    });
+  });
+
   it('should return PARSE_ERROR if the body is not JSON',function(){
     var header = nJwt.JwtHeader({type:'JWT',alg:'HS256'}).compact();
     assert.throws(function(){
       nJwt.verify(header+".notavalidbody");
     },properties.errors.PARSE_ERROR);
+  });
+
+  it('should give me the parsed header on the error object if the body fails',function(done){
+    var header = nJwt.JwtHeader({typ:'JWT',alg:uuid()});
+    var invalidJwt = header.compact()+'.notavalidbody';
+    nJwt.verify(invalidJwt,function(err){
+      assert.equal(err.jwtString, invalidJwt);
+      assert.equal(err.parsedHeader.alg, header.alg);
+      done();
+    });
   });
 
 });
@@ -80,6 +98,19 @@ describe('Verifier().verify() ',function(){
       verifiedToken = verifier.verify('invalid token');
     },properties.errors.PARSE_ERROR);
 
+  });
+
+  it('should return the jwt string, header and body on error objects',function(done){
+    var jwt = new nJwt.Jwt({expiredToken:uuid()})
+      .setExpiration(new Date().getTime()-1000);
+    var token = jwt.compact();
+    nJwt.verify(token,function(err){
+      assert.equal(err.jwtString,token);
+      assert.equal(err.parsedHeader.alg,jwt.header.alg);
+      assert.equal(err.parsedBody.expiredToken,jwt.body.expiredToken);
+      assert.equal(err.userMessage,properties.errors.EXPIRED);
+      done();
+    });
   });
 
   describe('when configured to expect no verification',function(){
