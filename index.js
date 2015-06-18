@@ -283,10 +283,6 @@ Verifier.prototype.verify = function verify(jwtString,cb){
     return done(new JwtError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH));
   }
 
-  if(!signingMethod){
-    return done(new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG));
-  }
-
   if(jwt.isExpired()){
     return done(new JwtError(properties.errors.EXPIRED));
   }
