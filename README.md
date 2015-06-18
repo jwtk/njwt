@@ -76,7 +76,7 @@ eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJmb28iOiJiYXIiLCJpYXQiOjE0MzQ0Nzk4ODN9.HQ
 
 #### Verifying Signed JWTs
 
-The end user will use their JWT to authenticate themeselves with your service.
+The end user will use their JWT to authenticate themselves with your service.
 When they present the JWT, you want to check the token to ensure that it's valid.
 This library does the following checks when you call the `verify` method:
 
@@ -95,6 +95,10 @@ nJwt.verify(token,signingKey,function(err,verifiedJwt){
   }
 });
 ````
+
+If validation fails you can look at `err.message` to understand the problem.  If
+the header and body of the JWT were parse-able (not not verifiable) they will
+be provided as objects at `err.parsedHeader` and `err.parsedBody`.
 
 You can also use verify synchronously, in which case the errors will be thrown:
 
