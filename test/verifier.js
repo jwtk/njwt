@@ -24,6 +24,30 @@ describe('Verifier().setSigningAlgorithm() ',function(){
   });
 });
 
+describe('.verify()',function(){
+  describe('if given only a token',function(){
+    it('should verify tokens that are alg none',function(){
+      var claims = {hello: uuid()};
+      var token = new nJwt.Jwt(claims)
+        .setSigningAlgorithm('none')
+        .compact();
+      assert.doesNotThrow(function(){
+        nJwt.verify(token);
+      });
+    });
+    it('should reject tokens that specify an alg',function(){
+      var claims = {hello: uuid()};
+      var key = uuid();
+      var token = new nJwt.create(claims,key)
+        .compact();
+      assert.throws(function(){
+        nJwt.verify(token);
+      },properties.errors.SIGNATURE_ALGORITHM_MISMTACH);
+    });
+  });
+
+});
+
 describe('Verifier().verify() ',function(){
 
   it('should support sync usage',function(){

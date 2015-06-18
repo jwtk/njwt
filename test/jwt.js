@@ -46,4 +46,12 @@ describe('Jwt',function() {
     });
   });
 
+  describe('.sign()',function(){
+    it('should throw if you give it an unknown algoritm',function(){
+      assert.throws(function(){
+        nJwt.Jwt().sign('hello');
+      },properties.errors.UNSUPPORTED_SIGNING_ALG);
+    });
+  });
+
 });

@@ -157,11 +157,15 @@ Jwt.prototype.sign = function sign(payload, alg, cyrptoInput) {
   var cryptoAlgName = algCryptoMap[alg];
   var signingType = algTypeMap[alg];
 
-  if(signingType === 'hmac') {
-    buffer = crypto.createHmac(cryptoAlgName, cyrptoInput).update(payload).digest();
-  }
-  else if(signingType === 'sign') {
-    buffer = crypto.createSign(cryptoAlgName).update(payload).sign(cyrptoInput);
+  if(cryptoAlgName){
+    if(signingType === 'hmac') {
+      buffer = crypto.createHmac(cryptoAlgName, cyrptoInput).update(payload).digest();
+    }
+    else{
+      buffer = crypto.createSign(cryptoAlgName).update(payload).sign(cyrptoInput);
+    }
+  }else{
+    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
   }
 
   return base64urlEncode(buffer);
@@ -276,7 +280,7 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var header = jwt.header;
   var signature = jwt.signature;
 
-  var signingMethod = algCryptoMap[header.alg];
+  var cryptoAlgName = algCryptoMap[header.alg];
   var signingType = algTypeMap[header.alg];
 
   if(header.alg!==this.signingAlgorithm){
@@ -292,19 +296,21 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
   var verified, digest;
 
-  if(signingType === 'hmac') {
-    digest = crypto.createHmac(signingMethod, this.signingKey)
+  if(cryptoAlgName==='none'){
+    verified = true;
+  }
+  else if(signingType === 'hmac') {
+    digest = crypto.createHmac(cryptoAlgName, this.signingKey)
       .update(digstInput)
       .digest('base64');
     verified = ( signature === digest );
   }
-  else if(signingType === 'sign') {
-    verified = crypto.createVerify(signingMethod)
+  else{
+    verified = crypto.createVerify(cryptoAlgName)
       .update(digstInput)
       .verify(this.signingKey, base64urlUnescape(signature), 'base64');
-  }else if(signingMethod==='none'){
-    verified = true;
   }
+
 
   var newJwt = new Jwt(body);
 
@@ -325,25 +331,37 @@ var jwtLib = {
   base64urlUnescape:base64urlUnescape,
   verify: function(jwtString,secret,alg,cb){
     var args = Array.prototype.slice.call(arguments);
+
+    if(typeof args[args.length-1]==='function'){
+      cb = args.pop();
+    }else{
+      cb = null;
+    }
+
     var verifier = new Verifier();
-    if(args.length>2){
+
+    if(args.length===3){
+      verifier.setSigningAlgorithm(alg);
+    }else{
+      verifier.setSigningAlgorithm('HS256');
+    }
+
+    if(args.length===1){
+      verifier.setSigningAlgorithm('none');
+    }else{
       verifier.setSigningKey(secret);
     }
-    if(args.length>3){
-      verifier.setSigningAlgorithm(alg);
-    }
-    cb = args.pop();
+
     return verifier.verify(jwtString,cb);
   },
   create: function(claims,secret,alg){
     var args = Array.prototype.slice.call(arguments);
     var jwt = new Jwt(claims);
-    jwt.setSigningAlgorithm(args.length===3 ? alg : 'HS256');
 
-    if(jwt.header.alg!=='none' && !secret){
+    if(alg!=='none' && !secret){
       throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
-    }
-    if(args.length>1){
+    }else{
+      jwt.setSigningAlgorithm(args.length===3 ? alg : 'HS256');
       jwt.setSigningKey(secret);
     }
 
