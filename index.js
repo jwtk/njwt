@@ -30,8 +30,8 @@ var algTypeMap = {
   ES512: 'sign'
 };
 
-function nowEpochSeconds(){
-  return Math.floor(new Date().getTime()/1000);
+function nowEpochSeconds() {
+  return Math.floor(new Date().getTime() / 1000);
 }
 
 function base64urlEncode(str) {
@@ -47,18 +47,18 @@ function base64urlUnescape(str) {
   return str.replace(/\-/g, '+').replace(/_/g, '/');
 }
 
-function isSupportedAlg(alg){
+function isSupportedAlg(alg) {
   return !!algCryptoMap[alg];
 }
 
-function handleError(cb,err,value){
-  if(typeof cb==='function'){
+function handleError(cb, err, value) {
+  if (typeof cb === 'function') {
     return process.nextTick(function() {
-      cb(err,value);
+      cb(err, value);
     });
-  }else if(err){
+  } else if (err) {
     throw err;
-  }else{
+  } else {
     return value;
   }
 }
@@ -69,22 +69,22 @@ function JwtError(message) {
 }
 util.inherits(JwtError, Error);
 
-function JwtParseError(message,jwtString,parsedHeader,parsedBody) {
-  this.name = 'JwtParseError';
-  this.message = this.userMessage = message;
+function JwtParseError(errorType, jwtString, parsedHeader, parsedBody) {
+  this.name = errorType.name;
+  this.message = this.userMessage = errorType.message;
   this.jwtString = jwtString;
   this.parsedHeader = parsedHeader;
   this.parsedBody = parsedBody;
 }
-util.inherits(JwtParseError, Error);
+util.inherits(JwtParseError, JwtError);
 
-function JwtBody(claims){
-  if(!(this instanceof JwtBody)){
+function JwtBody(claims) {
+  if (!(this instanceof JwtBody)) {
     return new JwtBody(claims);
   }
   var self = this;
-  if(claims){
-    Object.keys(claims).forEach(function(k){
+  if (claims) {
+    Object.keys(claims).forEach(function(k) {
       self[k] = claims[k];
     });
   }
@@ -93,30 +93,30 @@ function JwtBody(claims){
 
 JwtBody.prototype.toJSON = function() {
   var self = this;
-  return Object.keys(self).reduce(function(acc,key){
+  return Object.keys(self).reduce(function(acc, key) {
     acc[key] = self[key];
     return acc;
-  },{});
+  }, {});
 };
-JwtBody.prototype.compact = function compact(){
+JwtBody.prototype.compact = function compact() {
   return base64urlEncode(JSON.stringify(this));
 };
 
-function JwtHeader(header){
-  if(!(this instanceof JwtHeader)){
+function JwtHeader(header) {
+  if (!(this instanceof JwtHeader)) {
     return new JwtHeader(header);
   }
   this.typ = header && header.typ || 'JWT';
   this.alg = header && header.alg || 'HS256';
   return this;
 }
-JwtHeader.prototype.compact = function compact(){
+JwtHeader.prototype.compact = function compact() {
   return base64urlEncode(JSON.stringify(this));
 };
 
-function Jwt(claims){
+function Jwt(claims) {
 
-  if(!(this instanceof Jwt)){
+  if (!(this instanceof Jwt)) {
     return new Jwt(claims);
   }
   this.header = new JwtHeader();
@@ -143,9 +143,9 @@ Jwt.prototype.setIssuedAt = function setIssuedAt(iat) {
   return this;
 };
 Jwt.prototype.setExpiration = function setExpiration(exp) {
-  if(exp){
+  if (exp) {
     this.body.exp = Math.floor((exp instanceof Date ? exp : new Date(exp)).getTime() / 1000);
-  }else{
+  } else {
     delete this.body.exp;
   }
 
@@ -156,7 +156,7 @@ Jwt.prototype.setSigningKey = function setSigningKey(key) {
   return this;
 };
 Jwt.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
-  if(!this.isSupportedAlg(alg)){
+  if (!this.isSupportedAlg(alg)) {
     throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
   }
   this.header.alg = alg;
@@ -169,14 +169,13 @@ Jwt.prototype.sign = function sign(payload, alg, cyrptoInput) {
   var cryptoAlgName = algCryptoMap[alg];
   var signingType = algTypeMap[alg];
 
-  if(cryptoAlgName){
-    if(signingType === 'hmac') {
+  if (cryptoAlgName) {
+    if (signingType === 'hmac') {
       buffer = crypto.createHmac(cryptoAlgName, cyrptoInput).update(payload).digest();
-    }
-    else{
+    } else {
       buffer = crypto.createSign(cryptoAlgName).update(payload).sign(cyrptoInput);
     }
-  }else{
+  } else {
     throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
   }
 
@@ -191,11 +190,11 @@ Jwt.prototype.compact = function compact() {
   segments.push(this.header.compact());
   segments.push(this.body.compact());
 
-  if(this.header.alg !== 'none'){
+  if (this.header.alg !== 'none') {
     if (this.signingKey) {
       this.signature = this.sign(segments.join('.'), this.header.alg, this.signingKey);
       segments.push(this.signature);
-    }else{
+    } else {
       throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
     }
   }
@@ -204,64 +203,64 @@ Jwt.prototype.compact = function compact() {
 };
 
 Jwt.prototype.isExpired = function() {
-  return new Date(this.body.exp*1000) < new Date();
+  return new Date(this.body.exp * 1000) < new Date();
 };
 
 
-function Parser(options){
+function Parser(options) {
   return this;
 }
 
 Parser.prototype.isSupportedAlg = isSupportedAlg;
 Parser.prototype.safeJsonParse = function(input) {
   var result;
-  try{
-    result = JSON.parse(new Buffer(base64urlUnescape(input),'base64'));
-  }catch(e){
+  try {
+    result = JSON.parse(new Buffer(base64urlUnescape(input), 'base64'));
+  } catch (e) {
     return e;
   }
   return result;
 };
-Parser.prototype.parse = function parse(jwtString,cb){
+Parser.prototype.parse = function parse(jwtString, cb) {
 
-  var done = handleError.bind(null,cb);
+  var done = handleError.bind(null, cb);
   var segments = jwtString.split('.');
   var signature;
 
-  if(segments.length<2 || segments.length>3){
-    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,null,null));
+  if (segments.length < 2 || segments.length > 3) {
+    return done(new JwtParseError(properties.errors.PARSE_ERROR, jwtString, null, null));
   }
 
   var header = this.safeJsonParse(segments[0]);
   var body = this.safeJsonParse(segments[1]);
 
-  if(segments[2]){
-    signature = new Buffer(base64urlUnescape(segments[2]),'base64')
+  if (segments[2]) {
+    signature = new Buffer(base64urlUnescape(segments[2]), 'base64')
       .toString('base64');
   }
 
-  if(header instanceof Error){
-    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,null,null));
+  if (header instanceof Error) {
+    return done(new JwtParseError(properties.errors.PARSE_ERROR, jwtString, null, null));
   }
-  if(body instanceof Error){
-    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,header,null));
+  if (body instanceof Error) {
+    return done(new JwtParseError(properties.errors.PARSE_ERROR, jwtString, header, null));
   }
   var jwt = new Jwt(body);
   jwt.setSigningAlgorithm(header.alg);
   jwt.signature = signature;
-  jwt.verificationInput = segments[0] +'.' + segments[1];
-  return done(null,jwt);
+  jwt.verificationInput = segments[0] + '.' + segments[1];
+  return done(null, jwt);
 };
 
-function Verifier(){
-  if(!(this instanceof Verifier)){
+function Verifier() {
+  if (!(this instanceof Verifier)) {
     return new Verifier();
   }
   this.setSigningAlgorithm('HS256');
   return this;
 }
 Verifier.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
-  if(!this.isSupportedAlg(alg)){
+  if (!this.isSupportedAlg(alg)) {
     throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
   }
   this.signingAlgorithm = alg;
@@ -273,15 +272,15 @@ Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
 };
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
 
-Verifier.prototype.verify = function verify(jwtString,cb){
+Verifier.prototype.verify = function verify(jwtString, cb) {
 
   var jwt;
 
-  var done = handleError.bind(null,cb);
+  var done = handleError.bind(null, cb);
 
-  try{
+  try {
     jwt = new Parser().parse(jwtString);
-  }catch(e){
+  } catch (e) {
     return done(e);
   }
 
@@ -292,12 +291,12 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var cryptoAlgName = algCryptoMap[header.alg];
   var signingType = algTypeMap[header.alg];
 
-  if(header.alg!==this.signingAlgorithm){
-    return done(new JwtParseError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH,jwtString,header,body));
+  if (header.alg !== this.signingAlgorithm) {
+    return done(new JwtParseError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH, jwtString, header, body));
   }
 
-  if(jwt.isExpired()){
-    return done(new JwtParseError(properties.errors.EXPIRED,jwtString,header,body));
+  if (jwt.isExpired()) {
+    return done(new JwtParseError(properties.errors.EXPIRED, jwtString, header, body));
   }
 
 
@@ -305,16 +304,14 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
   var verified, digest;
 
-  if(cryptoAlgName==='none'){
+  if (cryptoAlgName === 'none') {
     verified = true;
-  }
-  else if(signingType === 'hmac') {
+  } else if (signingType === 'hmac') {
     digest = crypto.createHmac(cryptoAlgName, this.signingKey)
       .update(digstInput)
       .digest('base64');
-    verified = ( signature === digest );
-  }
-  else{
+    verified = (signature === digest);
+  } else {
     verified = crypto.createVerify(cryptoAlgName)
       .update(digstInput)
       .verify(this.signingKey, base64urlUnescape(signature), 'base64');
@@ -323,10 +320,10 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
   var newJwt = new Jwt(body);
 
-  if ( verified ) {
-    return done(null,newJwt);
-  }else{
-    return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body));
+  if (verified) {
+    return done(null, newJwt);
+  } else {
+    return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH, jwtString, header, body));
   }
 };
 
@@ -336,50 +333,50 @@ var jwtLib = {
   JwtHeader: JwtHeader,
   Verifier: Verifier,
   base64urlEncode: base64urlEncode,
-  base64urlUnescape:base64urlUnescape,
-  verify: function(jwtString,secret,alg,cb){
+  base64urlUnescape: base64urlUnescape,
+  verify: function(jwtString, secret, alg, cb) {
     var args = Array.prototype.slice.call(arguments);
 
-    if(typeof args[args.length-1]==='function'){
+    if (typeof args[args.length - 1] === 'function') {
       cb = args.pop();
-    }else{
+    } else {
       cb = null;
     }
 
     var verifier = new Verifier();
 
-    if(args.length===3){
+    if (args.length === 3) {
       verifier.setSigningAlgorithm(alg);
-    }else{
+    } else {
       verifier.setSigningAlgorithm('HS256');
     }
 
-    if(args.length===1){
+    if (args.length === 1) {
       verifier.setSigningAlgorithm('none');
-    }else{
+    } else {
       verifier.setSigningKey(secret);
     }
 
-    return verifier.verify(jwtString,cb);
+    return verifier.verify(jwtString, cb);
   },
-  create: function(claims,secret,alg){
+  create: function(claims, secret, alg) {
     var args = Array.prototype.slice.call(arguments);
     var jwt;
-    if(args.length >= 2){
+    if (args.length >= 2) {
       jwt = new Jwt(claims);
-    }else if (args.length===1 && typeof claims === 'string'){
+    } else if (args.length === 1 && typeof claims === 'string') {
       jwt = new Jwt({});
       secret = claims;
-    }else{
+    } else {
       jwt = new Jwt(claims);
     }
-    if(alg!=='none' && !secret){
+    if (alg !== 'none' && !secret) {
       throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
-    }else{
-      jwt.setSigningAlgorithm(args.length===3 ? alg : 'HS256');
+    } else {
+      jwt.setSigningAlgorithm(args.length === 3 ? alg : 'HS256');
       jwt.setSigningKey(secret);
     }
-    jwt.setExpiration((nowEpochSeconds() + (60*60))*1000); // one hour
+    jwt.setExpiration((nowEpochSeconds() + (60 * 60)) * 1000); // one hour
     return jwt;
   }
 };

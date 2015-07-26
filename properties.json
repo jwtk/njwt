@@ -1,10 +1,28 @@
 {
-  "errors": {
-      "PARSE_ERROR": "Jwt cannot be parsed",
-      "EXPIRED": "Jwt is expired",
-      "UNSUPPORTED_SIGNING_ALG": "Unsupported signing algorithm",
-      "SIGNING_KEY_REQUIRED": "Signing key is required",
-      "SIGNATURE_MISMTACH": "Signature verification failed",
-      "SIGNATURE_ALGORITHM_MISMTACH": "Unexpected signature algorithm"
-  }
+    "errors": {
+        "PARSE_ERROR": {
+            "name": "JwtParseError",
+            "message": "Jwt cannot be parsed"
+        },
+        "EXPIRED": {
+            "name": "JwtExpiredError",
+            "message": "Jwt is expired"
+        },
+        "UNSUPPORTED_SIGNING_ALG": {
+            "name": "UnsupportedAlgoError",
+            "message": "Unsupported signing algorithm"
+        },
+        "SIGNING_KEY_REQUIRED": {
+            "name": "SignKeyRequiredError",
+            "message": "Signing key is required"
+        },
+        "SIGNATURE_MISMTACH": {
+            "name": "SignatureMismatchError",
+            "message": "Signature verification failed"
+        },
+        "SIGNATURE_ALGORITHM_MISMTACH": {
+            "name": "UnexpectedSignatureAlgoError",
+            "message": "Unexpected signature algorithm"
+        }
+    }
 }
