@@ -106,10 +106,22 @@ function JwtHeader(header){
   if(!(this instanceof JwtHeader)){
     return new JwtHeader(header);
   }
+  var self = this;
   this.typ = header && header.typ || 'JWT';
   this.alg = header && header.alg || 'HS256';
-  return this;
+
+  if(header){
+    return Object.keys(header).reduce(function(acc,key){
+      if(self.reservedKeys.indexOf(key)===-1 && header.hasOwnProperty(key)){
+        acc[key] = header[key];
+      }
+      return acc;
+    },this);
+  }else{
+    return this;
+  }
 }
+JwtHeader.prototype.reservedKeys = ['typ','alg'];
 JwtHeader.prototype.compact = function compact(){
   return base64urlEncode(JSON.stringify(this));
 };
@@ -250,6 +262,7 @@ Parser.prototype.parse = function parse(jwtString,cb){
   jwt.setSigningAlgorithm(header.alg);
   jwt.signature = signature;
   jwt.verificationInput = segments[0] +'.' + segments[1];
+  jwt.header = new JwtHeader(header);
   return done(null,jwt);
 };
 
@@ -322,6 +335,8 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
 
   var newJwt = new Jwt(body);
+
+  newJwt.header = new JwtHeader(header);
 
   if ( verified ) {
     return done(null,newJwt);
