@@ -63,5 +63,10 @@ describe('Jwt',function() {
       },properties.errors.UNSUPPORTED_SIGNING_ALG);
     });
   });
-
+  describe('.toString()',function(){
+    it('should return the compacted JWT string',function(){
+      var jwt = nJwt.create({},uuid());
+      assert.equal(jwt.compact(),jwt.toString());
+    });
+  });
 });

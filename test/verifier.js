@@ -25,6 +25,12 @@ describe('Verifier().setSigningAlgorithm() ',function(){
 });
 
 describe('.verify()',function(){
+
+  it('should persist the original token to the toString() invocation',function(){
+    var token = new nJwt.Jwt({hello: uuid()}).setSigningAlgorithm('none').compact();
+    assert.equal(token,nJwt.verify(token).toString());
+  });
+
   describe('if given only a token',function(){
     it('should verify tokens that are alg none',function(){
       var claims = {hello: uuid()};

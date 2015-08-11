@@ -215,6 +215,10 @@ Jwt.prototype.compact = function compact() {
   return segments.join('.');
 };
 
+Jwt.prototype.toString = function(){
+  return this.compact();
+};
+
 Jwt.prototype.isExpired = function() {
   return new Date(this.body.exp*1000) < new Date();
 };
@@ -335,6 +339,8 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
 
   var newJwt = new Jwt(body);
+
+  newJwt.toString = function(){ return jwtString;};
 
   newJwt.header = new JwtHeader(header);
 
