@@ -134,8 +134,12 @@ function Jwt(claims){
   this.header = new JwtHeader();
   this.setSigningAlgorithm('none');
   this.body = new JwtBody(claims);
-  this.setJti(uuid.v4());
-  this.setIssuedAt(nowEpochSeconds());
+  if (!this.body.jti) {
+    this.setJti(uuid.v4());
+  }
+  if (!this.body.iat) {
+    this.setIssuedAt(nowEpochSeconds());
+  }
   return this;
 }
 Jwt.prototype.setJti = function setJti(jti) {
