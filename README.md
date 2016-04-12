@@ -32,7 +32,7 @@ with a default expiration of 1 hour.
 
 ````javascript
 var uuid = require('uuid');
-var nJwt = require('nJwt');
+var nJwt = require('njwt');
 var signingKey = uuid.v4(); // For example purposes
 
 var claims = {
