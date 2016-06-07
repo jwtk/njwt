@@ -25,9 +25,8 @@ describe('Verifier().setSigningAlgorithm() ',function(){
 });
 
 describe('.verify()',function(){
-
   it('should persist the original token to the toString() invocation',function(){
-    var token = new nJwt.Jwt({hello: uuid()}).setSigningAlgorithm('none').compact();
+    var token = 'eyJhbGciOiJub25lIn0.eyJzdWIiOiIxMjMifQ.p6bizskaJLAheVyRhQEMR-60PkH_jtLVYgMy1qTjCoc';
     assert.equal(token,nJwt.verify(token).toString());
   });
 
