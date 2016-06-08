@@ -348,7 +348,7 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   }
 
 
-  var newJwt = new Jwt(body);
+  var newJwt = new Jwt(body, false);
 
   newJwt.toString = function(){ return jwtString;};
 

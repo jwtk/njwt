@@ -30,6 +30,13 @@ describe('.verify()',function(){
     assert.equal(token,nJwt.verify(token).toString());
   });
 
+  it('should not alter the JWT, it should be compact-able as the same token',function(){
+    var orignalJwt = new nJwt.Jwt({hello: uuid()}, false).setSigningAlgorithm('none');
+    var originalToken = orignalJwt.compact();
+    var verifiedJwt = nJwt.verify(originalToken);
+    assert.equal(originalToken, verifiedJwt.compact());
+  });
+
   describe('if given only a token',function(){
     it('should verify tokens that are alg none',function(){
       var claims = {hello: uuid()};
