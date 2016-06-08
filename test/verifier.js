@@ -25,10 +25,16 @@ describe('Verifier().setSigningAlgorithm() ',function(){
 });
 
 describe('.verify()',function(){
-
   it('should persist the original token to the toString() invocation',function(){
-    var token = new nJwt.Jwt({hello: uuid()}).setSigningAlgorithm('none').compact();
+    var token = 'eyJhbGciOiJub25lIn0.eyJzdWIiOiIxMjMifQ.p6bizskaJLAheVyRhQEMR-60PkH_jtLVYgMy1qTjCoc';
     assert.equal(token,nJwt.verify(token).toString());
+  });
+
+  it('should not alter the JWT, it should be compact-able as the same token',function(){
+    var orignalJwt = new nJwt.Jwt({hello: uuid()}, false).setSigningAlgorithm('none');
+    var originalToken = orignalJwt.compact();
+    var verifiedJwt = nJwt.verify(originalToken);
+    assert.equal(originalToken, verifiedJwt.compact());
   });
 
   describe('if given only a token',function(){
