@@ -1,9 +1,10 @@
 'use strict';
 
-var crypto = require('crypto');
 var util = require('util');
-var properties = require('./properties.json');
 var uuid = require('uuid');
+var crypto = require('crypto');
+var ecdsaSigFormatter = require('ecdsa-sig-formatter');
+var properties = require('./properties.json');
 
 var algCryptoMap = {
   HS256: 'SHA256',
@@ -29,6 +30,10 @@ var algTypeMap = {
   ES384: 'sign',
   ES512: 'sign'
 };
+
+function isECDSA(algorithm) {
+  return algorithm.indexOf('ES') === 0;
+}
 
 function nowEpochSeconds(){
   return Math.floor(new Date().getTime()/1000);
@@ -185,24 +190,29 @@ Jwt.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
   return this;
 };
 
-Jwt.prototype.sign = function sign(payload, alg, cyrptoInput) {
+Jwt.prototype.sign = function sign(payload, algorithm, cryptoInput) {
   var buffer;
+  var signature;
+  var cryptoAlgName = algCryptoMap[algorithm];
+  var signingType = algTypeMap[algorithm];
 
-  var cryptoAlgName = algCryptoMap[alg];
-  var signingType = algTypeMap[alg];
-
-  if(cryptoAlgName){
-    if(signingType === 'hmac') {
-      buffer = crypto.createHmac(cryptoAlgName, cyrptoInput).update(payload).digest();
-    }
-    else{
-      buffer = crypto.createSign(cryptoAlgName).update(payload).sign(cyrptoInput);
-    }
-  }else{
+  if (!cryptoAlgName) {
     throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
   }
 
-  return base64urlEncode(buffer);
+  if (signingType === 'hmac') {
+    buffer = crypto.createHmac(cryptoAlgName, cryptoInput).update(payload).digest();
+  } else {
+    buffer = crypto.createSign(cryptoAlgName).update(payload).sign(cryptoInput);
+  }
+
+  if (isECDSA(algorithm)) {
+    signature = ecdsaSigFormatter.derToJose(buffer, algorithm);
+  } else {
+    signature = base64urlEncode(buffer);
+  }
+
+  return signature;
 };
 
 Jwt.prototype.isSupportedAlg = isSupportedAlg;
@@ -301,14 +311,13 @@ Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
 
 Verifier.prototype.verify = function verify(jwtString,cb){
-
   var jwt;
 
   var done = handleError.bind(null,cb);
 
-  try{
+  try {
     jwt = new Parser().parse(jwtString);
-  }catch(e){
+  } catch(e) {
     return done(e);
   }
 
@@ -319,46 +328,53 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var cryptoAlgName = algCryptoMap[header.alg];
   var signingType = algTypeMap[header.alg];
 
-  if(header.alg!==this.signingAlgorithm){
+  if (header.alg !== this.signingAlgorithm) {
     return done(new JwtParseError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH,jwtString,header,body));
   }
 
-  if(jwt.isExpired()){
+  if (jwt.isExpired()) {
     return done(new JwtParseError(properties.errors.EXPIRED,jwtString,header,body));
   }
 
-
   var digstInput = jwt.verificationInput;
-
   var verified, digest;
 
-  if(cryptoAlgName==='none'){
+  if( cryptoAlgName==='none') {
     verified = true;
-  }
-  else if(signingType === 'hmac') {
+  } else if(signingType === 'hmac') {
     digest = crypto.createHmac(cryptoAlgName, this.signingKey)
       .update(digstInput)
       .digest('base64');
-    verified = ( signature === digest );
-  }
-  else{
+    verified = signature === digest;
+  } else {
+    var unescapedSignature;
+    var signatureType = undefined;
+
+    if (isECDSA(header.alg)) {
+      unescapedSignature = ecdsaSigFormatter.joseToDer(signature, header.alg);
+    } else {
+      signatureType = 'base64';
+      unescapedSignature = base64urlUnescape(signature);
+    }
+
     verified = crypto.createVerify(cryptoAlgName)
       .update(digstInput)
-      .verify(this.signingKey, base64urlUnescape(signature), 'base64');
+      .verify(this.signingKey, unescapedSignature, signatureType);
   }
-
 
   var newJwt = new Jwt(body, false);
 
-  newJwt.toString = function(){ return jwtString;};
+  newJwt.toString = function () {
+    return jwtString;
+  };
 
   newJwt.header = new JwtHeader(header);
 
-  if ( verified ) {
-    return done(null,newJwt);
-  }else{
+  if (!verified) {
     return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body));
   }
+
+  return done(null, newJwt);
 };
 
 var jwtLib = {
@@ -414,4 +430,5 @@ var jwtLib = {
     return jwt;
   }
 };
+
 module.exports = jwtLib;
