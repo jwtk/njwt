@@ -351,7 +351,11 @@ Verifier.prototype.verify = function verify(jwtString,cb){
     var signatureType = undefined;
 
     if (isECDSA(header.alg)) {
-      unescapedSignature = ecdsaSigFormatter.joseToDer(signature, header.alg);
+      try {
+        unescapedSignature = ecdsaSigFormatter.joseToDer(signature, header.alg);
+      } catch (err) {
+        return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body));
+      }
     } else {
       signatureType = 'base64';
       unescapedSignature = base64urlUnescape(signature);
