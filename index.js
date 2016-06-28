@@ -74,12 +74,13 @@ function JwtError(message) {
 }
 util.inherits(JwtError, Error);
 
-function JwtParseError(message,jwtString,parsedHeader,parsedBody) {
+function JwtParseError(message,jwtString,parsedHeader,parsedBody,innerError) {
   this.name = 'JwtParseError';
   this.message = this.userMessage = message;
   this.jwtString = jwtString;
   this.parsedHeader = parsedHeader;
   this.parsedBody = parsedBody;
+  this.innerError = innerError;
 }
 util.inherits(JwtParseError, Error);
 
@@ -277,10 +278,10 @@ Parser.prototype.parse = function parse(jwtString,cb){
   }
 
   if(header instanceof Error){
-    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,null,null));
+    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,null,null,header));
   }
   if(body instanceof Error){
-    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,header,null));
+    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,header,null,body));
   }
   var jwt = new Jwt(body, false);
   jwt.setSigningAlgorithm(header.alg);
@@ -354,7 +355,7 @@ Verifier.prototype.verify = function verify(jwtString,cb){
       try {
         unescapedSignature = ecdsaSigFormatter.joseToDer(signature, header.alg);
       } catch (err) {
-        return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body));
+        return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body,err));
       }
     } else {
       signatureType = 'base64';
