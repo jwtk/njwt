@@ -366,6 +366,7 @@ var jwtLib = {
   JwtBody: JwtBody,
   JwtHeader: JwtHeader,
   Verifier: Verifier,
+  Parser: Parser,
   base64urlEncode: base64urlEncode,
   base64urlUnescape:base64urlUnescape,
   verify: function(jwtString,secret,alg,cb){
