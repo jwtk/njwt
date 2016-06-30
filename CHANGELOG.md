@@ -1,5 +1,9 @@
 # nJwt Change Log
 
+### 0.3.1
+
+Fixed to support proper signing and verification of ECDSA signatures.
+
 ### 0.3.0
 
 The JWTs that are returned by `nJwt.verify()` and `nJwt.parse()` will no longer
