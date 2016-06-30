@@ -1,9 +1,9 @@
+var fs = require('fs');
+var path = require('path');
+var uuid = require('uuid');
 var assert = require('chai').assert;
 
 var nJwt = require('../');
-
-var uuid = require('uuid');
-
 var properties = require('../properties.json');
 
 describe('Verifier',function(){
@@ -126,14 +126,12 @@ describe('Verifier().verify() ',function(){
   });
 
   describe('when configured to expect no verification',function(){
-
     var verifier = new nJwt.Verifier()
       .setSigningAlgorithm('none');
 
     var claims = {hello: uuid()};
 
     describe('and given an unsigned token',function(){
-
       var result;
       var token = new nJwt.Jwt(claims).compact();
 
@@ -151,7 +149,6 @@ describe('Verifier().verify() ',function(){
     });
 
     describe('and given an expired token',function(){
-
       var result;
       var jwt = new nJwt.Jwt({expiredToken:'x'})
         .setExpiration(new Date().getTime()-1000);
@@ -172,7 +169,6 @@ describe('Verifier().verify() ',function(){
     });
 
     describe('and given an signed token',function(){
-
       var result;
       var token = new nJwt.Jwt({foo:'bar'})
         .setSigningAlgorithm('HS256')
@@ -194,9 +190,7 @@ describe('Verifier().verify() ',function(){
 
   });
 
-
   describe('when configured to expect signature verification',function(){
-
     var verifier = new nJwt.Verifier()
       .setSigningAlgorithm('HS256')
       .setSigningKey('hello');
@@ -222,7 +216,6 @@ describe('Verifier().verify() ',function(){
   });
 
   describe('when configured to expect signature verification',function(){
-
     var key = uuid.v4();
 
     var verifier = new nJwt.Verifier()
@@ -232,7 +225,6 @@ describe('Verifier().verify() ',function(){
     var claims = {hello:uuid()};
 
     describe('and given a token that was signed with the same key',function(){
-
       var result;
       var token = new nJwt.Jwt(claims)
         .setSigningAlgorithm('HS256')
@@ -253,7 +245,6 @@ describe('Verifier().verify() ',function(){
     });
 
     describe('and given a token that was signed with a different key',function(){
-
       var result;
       var token = new nJwt.Jwt(claims)
         .setSigningAlgorithm('HS256')
@@ -272,11 +263,27 @@ describe('Verifier().verify() ',function(){
         assert.equal(result[0].userMessage,properties.errors.SIGNATURE_MISMTACH);
       });
     });
-
   });
 
+  describe('when verifying an invalid ECDSA token', function () {
+    var result = null;
+    var ecdsaPublicKey = fs.readFileSync(path.join(__dirname,'ecdsa.pub'),'utf8');
+    var invalidToken = 'eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.82wXTCDa4VHEAaDlq7PyqOqNbMGwDiXSt_n1nKGH43w';
 
+    before(function(done){
+      var verifier = new nJwt.Verifier()
+        .setSigningAlgorithm('ES512')
+        .setSigningKey(ecdsaPublicKey);
+
+      verifier.verify(invalidToken, function(err,res){
+        result = [err,res];
+        done();
+      });
+    });
+
+    it('should return SIGNATURE_MISMTACH',function(){
+      assert.isNotNull(result[0], 'An error was not returned');
+      assert.equal(result[0].userMessage,properties.errors.SIGNATURE_MISMTACH);
+    });
+  });
 });
-
-
-
