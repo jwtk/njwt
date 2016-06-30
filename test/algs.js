@@ -18,6 +18,7 @@ function testHmacAlg(alg,done){
   var token = jwt.compact();
 
   itShouldBeAValidJwt(jwt);
+
   nJwt.verify(token,key,alg,function(err,jwt){
     assert.isNull(err,'An unexpcted error was returned');
     itShouldBeAValidJwt(jwt);
@@ -26,12 +27,12 @@ function testHmacAlg(alg,done){
 }
 
 function testKeyAlg(alg,keyPair,done){
-
   var claims = { hello: uuid(), debug: true };
   var jwt = nJwt.create(claims,keyPair.private,alg);
   var token = jwt.compact();
 
   itShouldBeAValidJwt(jwt);
+
   nJwt.verify(token,keyPair.public,alg,function(err,jwt){
     assert.isNull(err,'An unexpcted error was returned');
     itShouldBeAValidJwt(jwt);

@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/jwtk/njwt",
   "dependencies": {
+    "ecdsa-sig-formatter": "^1.0.5",
     "uuid": "^2.0.1"
   },
   "devDependencies": {
