@@ -14,7 +14,7 @@ needing to read [rfc7519](http://www.rfc-editor.org/rfc/rfc7519.txt).
 
 ### Creating Secure, Signed JWTs
 
-JWTs expect *"claims"*, they a set of assertions about who the user is and what
+JWTs expect *"claims"*, they are a set of assertions about who the user is and what
 they can do.  The most common use case for JWTs is to declare the "scope" of the
 access token, which is a list of things that the holder of the token (the user)
 is allowed to do.
@@ -44,7 +44,7 @@ var claims = {
 var jwt = nJwt.create(claims,signingKey)
 ````
 
-Once you have creted the JWT, you can look at it's internal structure by
+Once you have created the JWT, you can look at its internal structure by
 logging it to the console.  This is our internal representation of the token,
 this is not what you'll send to your end user:
 ````javascript
@@ -71,7 +71,7 @@ unique for every token.  You can use this if you want to create a database of
 tokens that have been issued to the user.
 
 When you are ready to give the token to your end user, you need to compact it.
-This will turn it into a Base64 URL encoded string, so it'l be safe to pass
+This will turn it into a Base64 URL encoded string, so it'll be safe to pass
 around in browsers without getting any strange formatting applied to it.
 ````javascript
 var token = jwt.compact();
@@ -88,7 +88,7 @@ When they present the JWT, you want to check the token to ensure that it's valid
 This library does the following checks when you call the `verify` method:
 
 * It was created by you (by verifying the signature, using the secret signing key)
-* It is hasn't been modified (e.g. some claims were maliciously added)
+* It hasn't been modified (e.g. some claims were maliciously added)
 * It hasn't expired
 
 To verify a previously issued token, use the `verify` method.  You must give it
@@ -140,7 +140,7 @@ up.
 #### Claims
 
 If you need to provide custom claims, simply supply them to the `create` method
-or add them manually to the claims body after JWT is created.  These two
+or add them manually to the claims body after the JWT is created.  These two
 examples create the same claims body:
 
 ```javascript
