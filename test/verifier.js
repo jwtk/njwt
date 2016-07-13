@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var uuid = require('uuid');
+var secureRandom = require('secure-random');
 var assert = require('chai').assert;
 
 var nJwt = require('../');
@@ -155,7 +156,6 @@ describe('Verifier().verify() ',function(){
 
 
       before(function(done){
-        debugger
         verifier.verify(jwt.compact(),function(err,res){
           result = [err,res];
           done();
@@ -216,7 +216,7 @@ describe('Verifier().verify() ',function(){
   });
 
   describe('when configured to expect signature verification',function(){
-    var key = uuid.v4();
+    var key = secureRandom(256,{type: 'Buffer'});
 
     var verifier = new nJwt.Verifier()
       .setSigningAlgorithm('HS256')

@@ -21,7 +21,14 @@ is allowed to do.
 
 JWTs should be signed, otherwise you can't verify that they were created by you.
 Our library expects that you give us a highly random signing key for
-signing tokens.  We use the `HS256` algorithm by default.
+signing tokens.  We use the `HS256` algorithm by default, and the byte length of
+the signing key should match that of the signing algorithm, to ensure cryptographic
+security.
+
+While the library will accept strings for signing keys, we suggest you use a
+Buffer instead.  Using buffers makes it easy to do other operations, like
+convert your signing key to Base64URL encoding, if you need to transmit your
+key to other systems.
 
 While the claims are completely up to you, we do recommend setting the "Subject"
 and "Audience" fields.
@@ -30,10 +37,15 @@ JWTs commonly contain the `iat` and `exp` claims, which declare the time the
 token was issued and when it expires.  Our library will create these for you,
 with a default expiration of 1 hour.
 
+Here is a simple example that shows you how to create a secure byte string for
+your signing key, and then use that key to sign a JWT with some claims that you
+provide:
+
 ````javascript
-var uuid = require('uuid');
 var nJwt = require('njwt');
-var signingKey = uuid.v4(); // For example purposes
+var secureRandom = require('secure-random');
+
+var signingKey = secureRandom(256, {type: 'Buffer'}); // Create a highly random byte array of 256 bytes
 
 var claims = {
   iss: "http://myapp.com/",  // The URL of your service
@@ -41,12 +53,14 @@ var claims = {
   scope: "self, admins"
 }
 
-var jwt = nJwt.create(claims,signingKey)
+var jwt = nJwt.create(claims,signingKey);
+
 ````
 
 Once you have created the JWT, you can look at its internal structure by
 logging it to the console.  This is our internal representation of the token,
 this is not what you'll send to your end user:
+
 ````javascript
 console.log(jwt);
 ````
@@ -71,8 +85,9 @@ unique for every token.  You can use this if you want to create a database of
 tokens that have been issued to the user.
 
 When you are ready to give the token to your end user, you need to compact it.
-This will turn it into a Base64 URL encoded string, so it'll be safe to pass
-around in browsers without getting any strange formatting applied to it.
+This will turn it into a Base64 URL encoded string, making it safe to pass
+around in browsers without any unexpected formatting applied to it.
+
 ````javascript
 var token = jwt.compact();
 console.log(token);
@@ -80,6 +95,25 @@ console.log(token);
 ````
 eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJmb28iOiJiYXIiLCJpYXQiOjE0MzQ0Nzk4ODN9.HQyx15jWm1upqsrKSf89X_iP0sg7N46a9pqBVGPMYdiqZeuU_ZZOdU-zizHJoIHMIJxtEWzpSMaVubJW0AJsTqjqQf6GoJ4cmFAfmfUFXmMC4Xv5oc4UqvGizpoLjfZedd834PcwbS-WskZcL4pVNmBIGRtDXkoU1j2X1P5M_sNJ9lYZ5vITyqe4MYJovQzNdQziUNhcMI5wkXncV7XzGInBeQsPquASWVG4gb3Y--k1P3xWA4Df3rKeEQBbInDKXczvDpfIlTojx4Ch8OM8vXWWNxW-mIQrV31wRrS9XtNoig7irx8N0MzokiYKrQ8WP_ezPicHvVPIHhz-InOw
 ````
+
+This is the JWT that the client application will retain, and use for authentication.
+
+Your server application will also need to persist the signing key that was used
+to sign the token, and when the client tries to use this token for
+authentication, you will need to use the same signing key for verification.
+
+The Buffer needs to be converted to a string so that it can be persisted in a
+database, and you can do so like this:
+
+```
+var base64SigningKey = signingKey.toString('base64');
+```
+
+If you are going to use multiple signing keys, it is common practice to create a
+random ID which identifies the key, and store that ID with the key in your
+database.  When you create JWTs, set the `kid` field of the header to be this ID.
+Then when verifying JWTs, this `kid` field will tell you which signing key should
+be used for verification.
 
 ### Verifying Signed JWTs
 
