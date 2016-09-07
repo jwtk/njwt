@@ -35,7 +35,7 @@ and "Audience" fields.
 
 JWTs commonly contain the `iat`, `nbf` and `exp` claims, which declare the time the
 token was issued, activation date and when it expires.  Our library will create these for you (except nbf),
-with a default expiration of 1 hour. `nfb` is optional.
+with a default expiration of 1 hour. `nbf` is optional.
 
 Here is a simple example that shows you how to create a secure byte string for
 your signing key, and then use that key to sign a JWT with some claims that you
