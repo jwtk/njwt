@@ -5,6 +5,7 @@
       "UNSUPPORTED_SIGNING_ALG": "Unsupported signing algorithm",
       "SIGNING_KEY_REQUIRED": "Signing key is required",
       "SIGNATURE_MISMTACH": "Signature verification failed",
-      "SIGNATURE_ALGORITHM_MISMTACH": "Unexpected signature algorithm"
+      "SIGNATURE_ALGORITHM_MISMTACH": "Unexpected signature algorithm",
+      "NOT_ACTIVE": "Jwt not active"
   }
 }

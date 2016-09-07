@@ -179,6 +179,15 @@ Jwt.prototype.setExpiration = function setExpiration(exp) {
 
   return this;
 };
+Jwt.prototype.setNotBefore = function setNotBefore(nbf) {
+  if(nbf) {
+    this.body.nbf = Math.floor((nbf instanceof Date ? nbf : new Date(nbf)).getTime() / 1000);
+  } else {
+    delete this.body.nbf;
+  }
+
+  return this;
+};
 Jwt.prototype.setSigningKey = function setSigningKey(key) {
   this.signingKey = key;
   return this;
@@ -244,6 +253,9 @@ Jwt.prototype.isExpired = function() {
   return new Date(this.body.exp*1000) < new Date();
 };
 
+Jwt.prototype.isNotBefore = function() {
+  return new Date(this.body.nbf * 1000) >= new Date();
+};
 
 function Parser(options){
   return this;
@@ -335,6 +347,10 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
   if (jwt.isExpired()) {
     return done(new JwtParseError(properties.errors.EXPIRED,jwtString,header,body));
+  }
+
+  if (jwt.isNotBefore()) {
+    return done(new JwtParseError(properties.errors.NOT_ACTIVE,jwtString,header,body));
   }
 
   var digstInput = jwt.verificationInput;
