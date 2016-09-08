@@ -66,6 +66,12 @@ describe('create()',function(){
       assert.equal(nJwt.create({},uuid()).body.exp , oneHourFromNow);
     });
 
+    it('should not create default exp field, if exp is given',function(){
+      var time = 1473333333;
+      var token = nJwt.create({exp: time},uuid())
+      assert.equal(token.body.exp , Math.floor(time/1000));
+    });
+
     it('should not overwrite a defined jti field',function(){
       assert.equal(nJwt.create({jti: 1},uuid()).body.jti , 1);
     });
@@ -108,6 +114,3 @@ describe('base64 URL Encoding',function(){
 
   });
 });
-
-
-
