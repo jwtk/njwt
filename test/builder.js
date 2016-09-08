@@ -67,9 +67,9 @@ describe('create()',function(){
     });
 
     it('should not create default exp field, if exp is given',function(){
-      var time = 1473333333;
+      var time = Math.floor(Date.now()/1000)
       var token = nJwt.create({exp: time},uuid())
-      assert.equal(token.body.exp , Math.floor(time/1000));
+      assert.equal(token.body.exp , time);
     });
 
     it('should not overwrite a defined jti field',function(){
