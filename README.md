@@ -33,9 +33,9 @@ key to other systems.
 While the claims are completely up to you, we do recommend setting the "Subject"
 and "Audience" fields.
 
-JWTs commonly contain the `iat` and `exp` claims, which declare the time the
-token was issued and when it expires.  Our library will create these for you,
-with a default expiration of 1 hour.
+JWTs commonly contain the `iat`, `nbf` and `exp` claims, which declare the time the
+token was issued, activation date and when it expires.  Our library will create these for you (except nbf),
+with a default expiration of 1 hour. `nbf` is optional.
 
 Here is a simple example that shows you how to create a secure byte string for
 your signing key, and then use that key to sign a JWT with some claims that you
@@ -74,6 +74,7 @@ console.log(jwt);
     "jti": "c84280e6-0021-4e69-ad76-7a3fdd3d4ede",
     "iat": 1434660338,
     "exp": 1434663938,
+    "nbf": 1434663938,
     "iss": "http://myapp.com/",
     "sub": "users/user1234",
     "scope": ["self","admins"]
@@ -124,6 +125,7 @@ This library does the following checks when you call the `verify` method:
 * It was created by you (by verifying the signature, using the secret signing key)
 * It hasn't been modified (e.g. some claims were maliciously added)
 * It hasn't expired
+* It is active
 
 To verify a previously issued token, use the `verify` method.  You must give it
 the same signing key that you are using to create tokens:
@@ -200,6 +202,20 @@ var jwt = nJwt.create(claims,secret);
 jwt.setExpiration(new Date('2015-07-01')); // A specific date
 jwt.setExpiration(new Date().getTime() + (60*60*1000)); // One hour from now
 jwt.setExpiration(); // Remove the exp claim
+```
+
+#### NotBefore Claim
+
+A convenience method is supplied for modifying the `nbf` claim.  You can modify
+the `nbf` claim by passing a `Date` object, or a millisecond value, to the
+`setNotBefore` method:
+
+```javascript
+var jwt = nJwt.create(claims,secret);
+
+jwt.setNotbefore(new Date('2015-07-01')); // token is active from this date
+jwt.setNotbefore(new Date().getTime() + (60*60*1000)); // One hour from now
+jwt.setNotbefore(); // Remove the exp claim
 ```
 
 

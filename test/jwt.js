@@ -48,6 +48,33 @@ describe('Jwt',function() {
   });
 
 
+  describe('.setNotBefore()',function(){
+    it('should accept Date types and set the nbf claim to a UNIX timestamp value',function(){
+      var future = new Date('2025');
+      assert.equal(
+        nJwt.Jwt().setNotBefore(future).body.nbf,
+        future.getTime()/1000
+      );
+    });
+    it('should accept milliseconds values and set the nbf claim to a UNIX timestamp value',function(){
+      var future = new Date('2025').getTime();
+      assert.equal(
+        nJwt.Jwt().setNotBefore(future).body.nbf,
+        future/1000
+      );
+    });
+    it('should allow me to remove the nbf field',function(){
+      var jwt = nJwt.create({},uuid());
+      var oneHourFromNow = Math.floor(new Date().getTime()/1000) + (60*60);
+      assert.equal(nJwt.create({},uuid()).body.nbf , undefined);
+      assert.equal(jwt.setNotBefore().body.nbf, undefined);
+      assert.equal(jwt.setNotBefore(false).body.nbf, undefined);
+      assert.equal(jwt.setNotBefore(null).body.nbf, undefined);
+      assert.equal(jwt.setNotBefore(0).body.nbf, undefined);
+    });
+  });
+
+
   describe('.setSigningAlgorithm()',function(){
     it('should throw if you specify an alg but not a key',function(){
       assert.throws(function(){

@@ -126,6 +126,29 @@ describe('Verifier().verify() ',function(){
     });
   });
 
+  it('should return the jwt string, header and body on error objects with not active message',function(done){
+    var jwt = new nJwt.Jwt({notActiveToken:uuid()})
+      .setNotBefore(new Date().getTime()+1000);
+    var token = jwt.compact();
+    nJwt.verify(token,function(err){
+      assert.equal(err.jwtString,token);
+      assert.equal(err.parsedHeader.alg,jwt.header.alg);
+      assert.equal(err.parsedBody.notActiveToken,jwt.body.notActiveToken);
+      assert.equal(err.userMessage,properties.errors.NOT_ACTIVE);
+      done();
+    });
+  });
+
+  it('should return the jwt string, header and body with null error objects',function(done){
+    var jwt = new nJwt.Jwt({notActiveToken:uuid()});
+    var token = jwt.compact();
+    nJwt.verify(token,function(err){
+      assert.isNull(err);
+      assert.isNotNull(token);
+      done();
+    });
+  });
+
   describe('when configured to expect no verification',function(){
     var verifier = new nJwt.Verifier()
       .setSigningAlgorithm('none');
@@ -165,6 +188,25 @@ describe('Verifier().verify() ',function(){
       it('should return EXPIRED',function(){
         assert.isNotNull(result[0],'An error was not returned');
         assert.equal(result[0].userMessage,properties.errors.EXPIRED);
+      });
+    });
+
+    describe('and given a not active token',function(){
+      var result;
+      var jwt = new nJwt.Jwt({notActiveToken:'x'})
+        .setNotBefore(new Date().getTime()+1000);
+
+
+      before(function(done){
+        verifier.verify(jwt.compact(),function(err,res){
+          result = [err,res];
+          done();
+        });
+      });
+
+      it('should return NOT_ACTIVE',function(){
+        assert.isNotNull(result[0],'An error was not returned');
+        assert.equal(result[0].userMessage,properties.errors.NOT_ACTIVE);
       });
     });
 
