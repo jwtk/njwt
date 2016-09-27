@@ -34,6 +34,6 @@
     "jwt-simple": "^0.3.0",
     "mocha": "^2.2.3",
     "secure-random": "^1.1.1",
-    "ursa": "^0.8.4"
+    "ursa": "^0.9.4"
   }
 }
