@@ -1,7 +1,6 @@
 var assert = require('chai').assert;
 
 var nJwt = require('../');
-var uuid = require('uuid');
 
 var properties = require('../properties.json');
 
@@ -19,6 +18,7 @@ describe('Jwt()',function(){
 });
 
 describe('create()',function(){
+  var fakeSecret = '7752d2fc-2baf-4f36-92c3-1a90d485b5f5';
 
   it('should throw SIGNING_KEY_REQUIRED if passed no options',function(){
     assert.throws(function(){
@@ -27,7 +27,7 @@ describe('create()',function(){
   });
 
   it('should create a default token if the scret is the only value',function(){
-    assert(nJwt.create(uuid()) instanceof nJwt.Jwt);
+    assert(nJwt.create(fakeSecret) instanceof nJwt.Jwt);
   });
 
   it('should throw if using defaults without a secret key',function(){
@@ -43,35 +43,47 @@ describe('create()',function(){
   });
 
   describe('with a signing key',function(){
-
     it('should return a JWT',function(){
-      assert(nJwt.create({},uuid()) instanceof nJwt.Jwt);
+      assert(nJwt.create({}, fakeSecret) instanceof nJwt.Jwt);
     });
 
     it('should use HS256 by default',function(){
-      assert.equal(nJwt.create({},uuid()).header.alg,'HS256');
+      assert.equal(nJwt.create({}, fakeSecret).header.alg,'HS256');
     });
 
     it('should create the iat field',function(){
       var nowUnix = Math.floor(new Date().getTime()/1000);
-      assert.equal(nJwt.create({},uuid()).body.iat , nowUnix);
+      assert.equal(nJwt.create({}, fakeSecret).body.iat , nowUnix);
     });
 
     it('should not overwrite a defined iat field',function(){
-      assert.equal(nJwt.create({iat: 1},uuid()).body.iat , 1);
+      assert.equal(nJwt.create({iat: 1},fakeSecret).body.iat , 1);
     });
 
     it('should create the exp field, defaulted to 1 hour',function(){
       var oneHourFromNow = Math.floor(new Date().getTime()/1000) + (60*60);
-      assert.equal(nJwt.create({},uuid()).body.exp , oneHourFromNow);
+      assert.equal(nJwt.create({},fakeSecret).body.exp , oneHourFromNow);
+    });
+
+    it('should respect expiration if provided as an exp claim',function(){
+      var currentEpochTime = Math.floor(new Date().getTime() / 1000);
+      var twoHoursFromNowInSeconds = currentEpochTime + (2 * 60 * 60);
+
+      var testOptions = {
+        exp: twoHoursFromNowInSeconds * 1000 // As milliseconds.
+      };
+
+      var jwt = nJwt.create(testOptions, fakeSecret);
+
+      assert.equal(jwt.body.exp, twoHoursFromNowInSeconds);
     });
 
     it('should not overwrite a defined jti field',function(){
-      assert.equal(nJwt.create({jti: 1},uuid()).body.jti , 1);
+      assert.equal(nJwt.create({jti: 1},fakeSecret).body.jti , 1);
     });
 
     it('should create the jti field',function(){
-      var jwt = nJwt.create({},uuid());
+      var jwt = nJwt.create({},fakeSecret);
       assert(jwt.body.jti.match(/[a-zA-Z0-9]+[-]/));
     });
 

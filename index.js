@@ -432,22 +432,43 @@ var jwtLib = {
   },
   create: function(claims,secret,alg){
     var args = Array.prototype.slice.call(arguments);
-    var jwt;
-    if(args.length >= 2){
-      jwt = new Jwt(claims);
-    }else if (args.length===1 && typeof claims === 'string'){
-      jwt = new Jwt({});
+
+    if (args.length === 1 && typeof claims === 'string'){
       secret = claims;
-    }else{
-      jwt = new Jwt(claims);
+      claims = {};
     }
-    if(alg!=='none' && !secret){
+
+    if (!claims) {
+      claims = {};
+    }
+
+    if (!alg) {
+      alg = 'HS256';
+    }
+
+    var jwt = new Jwt(claims);
+
+    if(alg !== 'none' && !secret){
       throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
-    }else{
-      jwt.setSigningAlgorithm(args.length===3 ? alg : 'HS256');
-      jwt.setSigningKey(secret);
     }
-    jwt.setExpiration((nowEpochSeconds() + (60*60))*1000); // one hour
+
+    var expireAt;
+
+    // If we have an expiration in our claims, then use that.
+    if (claims.exp) {
+      expireAt = claims.exp;
+
+    // Or default to 1 hour expiration.
+    } else {
+      var oneHourInSeconds = 1 * 60 * 60;
+      var oneHourIntoTheFutureInSeconds = nowEpochSeconds() + oneHourInSeconds;
+      expireAt = oneHourIntoTheFutureInSeconds * 1000; // In milliseconds
+    }
+
+    jwt.setSigningAlgorithm(alg);
+    jwt.setSigningKey(secret);
+    jwt.setExpiration(expireAt);
+
     return jwt;
   }
 };
