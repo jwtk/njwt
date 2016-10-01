@@ -219,6 +219,31 @@ jwt.setNotbefore(); // Remove the exp claim
 ```
 
 
+## Error Handling
+
+If an error occurs then one of the following error types will either be thrown
+or passed as the first argument in a callback.
+
+Type                                    | Description
+----------------------------------------|--------------------------------------
+JwtError                                | Base type. All errors implement this.
+JwtParseError                           | Jwt cannot be parsed.
+UnsupportedSigningAlgorithmJwtError     | Unsupported signing algorithm.
+SigningKeyRequiredJwtError              | Signing key is required.
+NotActiveJwtParseError                  | Jwt not active.
+ExpiredJwtParseError                    | Jwt is expired.
+SignatureAlgorithmMismatchJwtParseError | Unexpected signature algorithm.
+SignatureMismatchJwtParseError          | Signature verification failed.
+
+To handle a specific error, simply compare the instance of the error received to one of
+the error types above, as shown in the example below:
+
+```javascript
+if (err instanceof nJwt.JwtParseError) {
+  console.log('Unable to parse the provided jwt.');
+}
+```
+
 ## Supported Algorithms
 
 "alg" Value | Algorithm used

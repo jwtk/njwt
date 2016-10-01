@@ -5,7 +5,7 @@ var secureRandom = require('secure-random');
 var assert = require('chai').assert;
 
 var nJwt = require('../');
-var properties = require('../properties.json');
+var errors = require('../errors');
 
 describe('Verifier',function(){
   it('should construct itself if called without new',function(){
@@ -16,10 +16,10 @@ describe('Verifier',function(){
 describe('Verifier().setSigningAlgorithm() ',function(){
   describe('if called with an unsupported algorithm',function(){
 
-    it('should throw UNSUPPORTED_SIGNING_ALG',function(){
+    it('should throw UnsupportedSigningAlgorithmJwtError',function(){
       assert.throws(function(){
         new nJwt.Verifier().setSigningAlgorithm('unsupported');
-      },properties.errors.UNSUPPORTED_SIGNING_ALG);
+      },errors.UnsupportedSigningAlgorithmJwtError);
     });
 
   });
@@ -55,14 +55,14 @@ describe('.verify()',function(){
         .compact();
       assert.throws(function(){
         nJwt.verify(token);
-      },properties.errors.SIGNATURE_ALGORITHM_MISMTACH);
+      },errors.SignatureAlgorithmMismatchJwtParseError);
     });
   });
 
   it('should return PARSE_ERROR if the header is not JSON',function(){
     assert.throws(function(){
       nJwt.verify("noavalidheader.notavalidbody");
-    },properties.errors.PARSE_ERROR);
+    },errors.JwtParseError);
   });
 
   it('should give me the original string on the parse error object',function(done){
@@ -77,7 +77,7 @@ describe('.verify()',function(){
     var header = nJwt.JwtHeader({type:'JWT',alg:'HS256'}).compact();
     assert.throws(function(){
       nJwt.verify(header+".notavalidbody");
-    },properties.errors.PARSE_ERROR);
+    },errors.JwtParseError);
   });
 
   it('should give me the parsed header on the error object if the body fails',function(done){
@@ -109,7 +109,7 @@ describe('Verifier().verify() ',function(){
 
     assert.throws(function(){
       verifiedToken = verifier.verify('invalid token');
-    },properties.errors.PARSE_ERROR);
+    },errors.JwtParseError);
 
   });
 
@@ -121,7 +121,7 @@ describe('Verifier().verify() ',function(){
       assert.equal(err.jwtString,token);
       assert.equal(err.parsedHeader.alg,jwt.header.alg);
       assert.equal(err.parsedBody.expiredToken,jwt.body.expiredToken);
-      assert.equal(err.userMessage,properties.errors.EXPIRED);
+      assert.instanceOf(err,errors.ExpiredJwtParseError);
       done();
     });
   });
@@ -134,7 +134,7 @@ describe('Verifier().verify() ',function(){
       assert.equal(err.jwtString,token);
       assert.equal(err.parsedHeader.alg,jwt.header.alg);
       assert.equal(err.parsedBody.notActiveToken,jwt.body.notActiveToken);
-      assert.equal(err.userMessage,properties.errors.NOT_ACTIVE);
+      assert.instanceOf(err,errors.NotActiveJwtParseError);
       done();
     });
   });
@@ -187,7 +187,7 @@ describe('Verifier().verify() ',function(){
 
       it('should return EXPIRED',function(){
         assert.isNotNull(result[0],'An error was not returned');
-        assert.equal(result[0].userMessage,properties.errors.EXPIRED);
+        assert.instanceOf(result[0],errors.ExpiredJwtParseError);
       });
     });
 
@@ -206,7 +206,7 @@ describe('Verifier().verify() ',function(){
 
       it('should return NOT_ACTIVE',function(){
         assert.isNotNull(result[0],'An error was not returned');
-        assert.equal(result[0].userMessage,properties.errors.NOT_ACTIVE);
+        assert.instanceOf(result[0],errors.NotActiveJwtParseError);
       });
     });
 
@@ -226,7 +226,7 @@ describe('Verifier().verify() ',function(){
 
       it('should return an unexpected algorithm error',function(){
         assert.isNotNull(result[0],'An error was not returned');
-        assert.equal(result[0].userMessage,properties.errors.SIGNATURE_ALGORITHM_MISMTACH);
+        assert.instanceOf(result[0],errors.SignatureAlgorithmMismatchJwtParseError);
       });
     });
 
@@ -249,9 +249,9 @@ describe('Verifier().verify() ',function(){
         });
       });
 
-      it('should return SIGNATURE_ALGORITHM_MISMTACH',function(){
+      it('should return SignatureAlgorithmMismatchJwtParseError',function(){
         assert.isNotNull(result[0],'An error was not returned');
-        assert.equal(result[0].userMessage,properties.errors.SIGNATURE_ALGORITHM_MISMTACH);
+        assert.instanceOf(result[0],errors.SignatureAlgorithmMismatchJwtParseError);
       });
     });
 
@@ -300,9 +300,9 @@ describe('Verifier().verify() ',function(){
         });
       });
 
-      it('should return SIGNATURE_MISMTACH',function(){
+      it('should return SignatureMismatchJwtParseError',function(){
         assert.isNotNull(result[0],'An error was not returned');
-        assert.equal(result[0].userMessage,properties.errors.SIGNATURE_MISMTACH);
+        assert.instanceOf(result[0],errors.SignatureMismatchJwtParseError);
       });
     });
   });
@@ -323,9 +323,9 @@ describe('Verifier().verify() ',function(){
       });
     });
 
-    it('should return SIGNATURE_MISMTACH',function(){
+    it('should return SignatureMismatchJwtParseError',function(){
       assert.isNotNull(result[0], 'An error was not returned');
-      assert.equal(result[0].userMessage,properties.errors.SIGNATURE_MISMTACH);
+      assert.instanceOf(result[0],errors.SignatureMismatchJwtParseError);
     });
   });
 });
