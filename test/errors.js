@@ -1,5 +1,7 @@
+'use strict';
+
 var assert = require('chai').assert;
-var errors = require('../errors');
+var errors = require('../lib/errors');
 
 describe('Errors', function () {
   describe('JwtError', function () {
