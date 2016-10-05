@@ -171,7 +171,7 @@ describe('Verifier().verify()', function () {
     describe('and given an expired token', function () {
       var result;
       var jwt = new nJwt.Jwt({expiredToken: 'x'})
-        .setExpiration(new Date().getTime() - 1000);
+        .setExpiration(new Date().getTime() - (10 * 1000));
 
       before(function (done) {
         verifier.verify(jwt.compact(), function (err, res) {
@@ -189,7 +189,7 @@ describe('Verifier().verify()', function () {
     describe('and given a not active token', function () {
       var result;
       var jwt = new nJwt.Jwt({notActiveToken: 'x'})
-        .setNotBefore(new Date().getTime() + 1000);
+        .setNotBefore(new Date().getTime() + (10 * 1000));
 
       before(function (done) {
         verifier.verify(jwt.compact(), function (err, res) {
@@ -198,7 +198,7 @@ describe('Verifier().verify()', function () {
         });
       });
 
-      it('should return NotActiveJwtParseError error', function () {
+      it.only('should return NotActiveJwtParseError error', function () {
         assert.isNotNull(result[0], 'An error was not returned');
         assert.instanceOf(result[0], nJwt.NotActiveJwtParseError);
       });
