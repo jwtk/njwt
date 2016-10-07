@@ -5,6 +5,10 @@ var nJwt = require('../');
 var uuid = require('uuid');
 
 describe('Jwt', function () {
+  it('should construct itself if called without new', function () {
+    assert(nJwt.Jwt() instanceof nJwt.Jwt);
+  });
+
   describe('.setSubject()', function () {
     it('should set the sub claim', function () {
       var sub = uuid();
