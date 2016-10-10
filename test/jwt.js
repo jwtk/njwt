@@ -9,6 +9,22 @@ describe('Jwt', function () {
     assert(nJwt.Jwt() instanceof nJwt.Jwt);
   });
 
+  describe('.setHeader(key, value)', function () {
+    it('should set custom header', function () {
+      var key = uuid();
+      var value = uuid();
+      assert.equal(new nJwt.Jwt().setHeader(key, value).header[key], value);
+    });
+  });
+
+  describe('.setBody(key, value)', function () {
+    it('should set custom body', function () {
+      var key = uuid();
+      var value = uuid();
+      assert.equal(new nJwt.Jwt().setBody(key, value).body[key], value);
+    });
+  });
+
   describe('.setSubject()', function () {
     it('should set the sub claim', function () {
       var sub = uuid();
