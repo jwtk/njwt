@@ -1,6 +1,7 @@
 var util = require('util');
 
 function JwtError(message) {
+  Error.captureStackTrace(this, this.constructor);
   this.name = 'JwtError';
   this.message = this.userMessage = message;
 }
