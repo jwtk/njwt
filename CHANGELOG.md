@@ -1,5 +1,9 @@
 # nJwt Change Log
 
+### 0.3.2
+
+Added support for the `nbf`, "not before", claim.
+
 ### 0.3.1
 
 Fixed to support proper signing and verification of ECDSA signatures.
