@@ -1,7 +1,7 @@
 var assert = require('chai').assert;
 var nJwt = require('../');
 var uuid = require('uuid');
-var properties = require('../properties.json');
+var errors = require('../errors');
 
 describe('Jwt',function() {
   it('should construct itself if called without new',function(){
@@ -79,7 +79,7 @@ describe('Jwt',function() {
     it('should throw if you specify an alg but not a key',function(){
       assert.throws(function(){
         nJwt.Jwt().setSigningAlgorithm('HS256').compact();
-      },properties.errors.SIGNING_KEY_REQUIRED);
+      },errors.SigningKeyRequiredJwtError);
     });
   });
 
@@ -87,7 +87,7 @@ describe('Jwt',function() {
     it('should throw if you give it an unknown algoritm',function(){
       assert.throws(function(){
         nJwt.Jwt().sign('hello');
-      },properties.errors.UNSUPPORTED_SIGNING_ALG);
+      },errors.UnsupportedSigningAlgorithmJwtError);
     });
   });
   describe('.toString()',function(){

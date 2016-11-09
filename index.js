@@ -1,10 +1,9 @@
 'use strict';
 
-var util = require('util');
 var uuid = require('uuid');
 var crypto = require('crypto');
 var ecdsaSigFormatter = require('ecdsa-sig-formatter');
-var properties = require('./properties.json');
+var errors = require('./errors');
 
 var algCryptoMap = {
   HS256: 'SHA256',
@@ -67,22 +66,6 @@ function handleError(cb,err,value){
     return value;
   }
 }
-
-function JwtError(message) {
-  this.name = 'JwtError';
-  this.message = this.userMessage = message;
-}
-util.inherits(JwtError, Error);
-
-function JwtParseError(message,jwtString,parsedHeader,parsedBody,innerError) {
-  this.name = 'JwtParseError';
-  this.message = this.userMessage = message;
-  this.jwtString = jwtString;
-  this.parsedHeader = parsedHeader;
-  this.parsedBody = parsedBody;
-  this.innerError = innerError;
-}
-util.inherits(JwtParseError, Error);
 
 function JwtBody(claims){
   if(!(this instanceof JwtBody)){
@@ -194,7 +177,7 @@ Jwt.prototype.setSigningKey = function setSigningKey(key) {
 };
 Jwt.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
   if(!this.isSupportedAlg(alg)){
-    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
+    throw new errors.UnsupportedSigningAlgorithmJwtError();
   }
   this.header.alg = alg;
   return this;
@@ -207,7 +190,7 @@ Jwt.prototype.sign = function sign(payload, algorithm, cryptoInput) {
   var signingType = algTypeMap[algorithm];
 
   if (!cryptoAlgName) {
-    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
+    throw new errors.UnsupportedSigningAlgorithmJwtError();
   }
 
   if (signingType === 'hmac') {
@@ -234,12 +217,13 @@ Jwt.prototype.compact = function compact() {
   segments.push(this.body.compact());
 
   if(this.header.alg !== 'none'){
-    if (this.signingKey) {
-      this.signature = this.sign(segments.join('.'), this.header.alg, this.signingKey);
-      segments.push(this.signature);
-    }else{
-      throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
+    if (!this.signingKey) {
+      throw new errors.SigningKeyRequiredJwtError();
     }
+
+    this.signature = this.sign(segments.join('.'), this.header.alg, this.signingKey);
+
+    segments.push(this.signature);
   }
 
   return segments.join('.');
@@ -278,7 +262,7 @@ Parser.prototype.parse = function parse(jwtString,cb){
   var signature;
 
   if(segments.length<2 || segments.length>3){
-    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,null,null));
+    return done(new errors.JwtParseError(jwtString));
   }
 
   var header = this.safeJsonParse(segments[0]);
@@ -290,10 +274,10 @@ Parser.prototype.parse = function parse(jwtString,cb){
   }
 
   if(header instanceof Error){
-    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,null,null,header));
+    return done(new errors.JwtParseError(jwtString, null, null, header));
   }
   if(body instanceof Error){
-    return done(new JwtParseError(properties.errors.PARSE_ERROR,jwtString,header,null,body));
+    return done(new errors.JwtParseError(jwtString, header, null, body));
   }
   var jwt = new Jwt(body, false);
   jwt.setSigningAlgorithm(header.alg);
@@ -312,7 +296,7 @@ function Verifier(){
 }
 Verifier.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
   if(!this.isSupportedAlg(alg)){
-    throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
+    throw new errors.UnsupportedSigningAlgorithmJwtError();
   }
   this.signingAlgorithm = alg;
   return this;
@@ -342,15 +326,15 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var signingType = algTypeMap[header.alg];
 
   if (header.alg !== this.signingAlgorithm) {
-    return done(new JwtParseError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH,jwtString,header,body));
+    return done(new errors.SignatureAlgorithmMismatchJwtParseError(jwtString, header, body));
   }
 
   if (jwt.isExpired()) {
-    return done(new JwtParseError(properties.errors.EXPIRED,jwtString,header,body));
+    return done(new errors.ExpiredJwtParseError(jwtString, header, body));
   }
 
   if (jwt.isNotBefore()) {
-    return done(new JwtParseError(properties.errors.NOT_ACTIVE,jwtString,header,body));
+    return done(new errors.NotActiveJwtParseError(jwtString, header, body));
   }
 
   var digstInput = jwt.verificationInput;
@@ -371,7 +355,7 @@ Verifier.prototype.verify = function verify(jwtString,cb){
       try {
         unescapedSignature = ecdsaSigFormatter.joseToDer(signature, header.alg);
       } catch (err) {
-        return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body,err));
+        return done(new errors.SignatureMismatchJwtParseError(jwtString, header, body, err));
       }
     } else {
       signatureType = 'base64';
@@ -392,7 +376,7 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   newJwt.header = new JwtHeader(header);
 
   if (!verified) {
-    return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body));
+    return done(new errors.SignatureMismatchJwtParseError(jwtString, header, body));
   }
 
   return done(null, newJwt);
@@ -441,15 +425,22 @@ var jwtLib = {
     }else{
       jwt = new Jwt(claims);
     }
-    if(alg!=='none' && !secret){
-      throw new Error(properties.errors.SIGNING_KEY_REQUIRED);
-    }else{
-      jwt.setSigningAlgorithm(args.length===3 ? alg : 'HS256');
-      jwt.setSigningKey(secret);
+
+    if(alg !== 'none' && !secret){
+      throw new errors.SigningKeyRequiredJwtError();
     }
+
+    jwt.setSigningAlgorithm(args.length===3 ? alg : 'HS256');
+    jwt.setSigningKey(secret);
     jwt.setExpiration((nowEpochSeconds() + (60*60))*1000); // one hour
+
     return jwt;
   }
 };
+
+// Copy errors onto export object.
+for (var key in errors) {
+  jwtLib[key] = errors[key];
+}
 
 module.exports = jwtLib;

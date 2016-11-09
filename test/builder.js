@@ -3,7 +3,7 @@ var assert = require('chai').assert;
 var nJwt = require('../');
 var uuid = require('uuid');
 
-var properties = require('../properties.json');
+var errors = require('../errors');
 
 describe('Jwt()',function(){
   describe('signWith()',function(){
@@ -11,7 +11,7 @@ describe('Jwt()',function(){
       it('should throw',function(){
         assert.throws(function(){
           new nJwt.Jwt().setSigningAlgorithm('unsupported');
-        },properties.errors.UNSUPPORTED_SIGNING_ALG);
+        },errors.UnsupportedSigningAlgorithmJwtError);
       });
     });
   });
@@ -20,10 +20,10 @@ describe('Jwt()',function(){
 
 describe('create()',function(){
 
-  it('should throw SIGNING_KEY_REQUIRED if passed no options',function(){
+  it('should throw UnsupportedSigningAlgorithmJwtError if passed no options',function(){
     assert.throws(function(){
       nJwt.create();
-    },properties.errors.SIGNING_KEY_REQUIRED);
+    },errors.SigningKeyRequiredJwtError);
   });
 
   it('should create a default token if the scret is the only value',function(){
@@ -33,7 +33,7 @@ describe('create()',function(){
   it('should throw if using defaults without a secret key',function(){
     assert.throws(function(){
       nJwt.create({});
-    },properties.errors.SIGNING_KEY_REQUIRED);
+    },errors.SigningKeyRequiredJwtError);
   });
 
   it('should not throw if none is specified when omitting the key',function(){
@@ -43,7 +43,6 @@ describe('create()',function(){
   });
 
   describe('with a signing key',function(){
-
     it('should return a JWT',function(){
       assert(nJwt.create({},uuid()) instanceof nJwt.Jwt);
     });

@@ -2,7 +2,7 @@ var assert = require('chai').assert;
 
 var nJwt = require('../');
 
-var properties = require('../properties.json');
+var errors = require('../errors');
 
 var fs = require('fs');
 var path = require('path');
@@ -82,9 +82,9 @@ describe('a token that is signed with an RSA public key but header alg of HS256'
       });
     });
 
-    it('should return SIGNATURE_ALGORITHM_MISMTACH error',function(){
+    it('should return SignatureAlgorithmMismatchJwtParseError error',function(){
       assert.isNotNull(result[0],'An error was not returned');
-      assert.equal(result[0].message,properties.errors.SIGNATURE_ALGORITHM_MISMTACH);
+      assert.instanceOf(result[0],errors.SignatureAlgorithmMismatchJwtParseError);
     });
   });
 
