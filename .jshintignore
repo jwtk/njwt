@@ -1,0 +1,4 @@
+test/rsa.pub
+test/rsa.priv
+test/ecdsa.pub
+test/ecdsa.priv
