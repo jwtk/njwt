@@ -192,6 +192,11 @@ Jwt.prototype.setSigningKey = function setSigningKey(key) {
   this.signingKey = key;
   return this;
 };
+Jwt.prototype.setSigningKeyId = function setSigningKeyId(keyid) {
+  this.header.keyid = keyid;
+  return this;
+};
+
 Jwt.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
   if(!this.isSupportedAlg(alg)){
     throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
