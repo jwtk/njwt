@@ -331,12 +331,16 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
   var done = handleError.bind(null,cb);
 
-  try {
-    jwt = new Parser().parse(jwtString);
-  } catch(e) {
-    return done(e);
+  if (jwtString instanceof Jwt) {
+    jwt = jwtString;
+   // console.log(jwt)
+  } else {
+    try {
+      jwt = new Parser().parse(jwtString);
+    } catch(e) {
+      return done(e);
+    }
   }
-
   var body = jwt.body;
   var header = jwt.header;
   var signature = jwt.signature;

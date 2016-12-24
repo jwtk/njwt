@@ -328,4 +328,27 @@ describe('Verifier().verify() ',function(){
       assert.equal(result[0].userMessage,properties.errors.SIGNATURE_MISMTACH);
     });
   });
+
+  describe('verify and existing Jwt object', function () {
+    var result = null
+    var claims = { hello: 'world' }
+
+    before(function(done){
+      var token = new nJwt.Jwt(claims, false)
+          .setSigningAlgorithm('none')
+          .compact();
+      var jwt = new nJwt.Parser().parse(token);
+      var verifier = new nJwt.Verifier()
+        .setSigningAlgorithm('none')
+      verifier.verify(jwt, function(err,res){
+        result = [err,res];
+        done();
+      });
+    });
+    it('should accept a valid Jwt as first param', function () {
+      assert.equal(result[1].body.hello, claims.hello);
+    });
+
+  });
+
 });
