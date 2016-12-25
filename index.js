@@ -192,8 +192,8 @@ Jwt.prototype.setSigningKey = function setSigningKey(key) {
   this.signingKey = key;
   return this;
 };
-Jwt.prototype.setSigningKeyId = function setSigningKeyId(keyid) {
-  this.header.keyid = keyid;
+Jwt.prototype.setSigningKeyId = function setSigningKeyId(kid) {
+  this.header.kid = kid;
   return this;
 };
 

@@ -84,11 +84,11 @@ describe('Jwt',function() {
   });
 
   describe('.setSigningKeyId()',function(){
-    it('should accept a keyid key',function(){
-      var keyid = '1234'
+    it('should accept a kid',function(){
+      var kid = '1234'
       var jwt = new nJwt.Jwt({}, false)
-        .setSigningKeyId(keyid);
-        assert.equal(jwt.header.keyid, keyid);
+        .setSigningKeyId(kid);
+        assert.equal(jwt.header.kid, kid);
     });
   });
 

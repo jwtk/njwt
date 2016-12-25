@@ -7,8 +7,8 @@ describe('demonstrate a key lookup on verify', function () {
     var result;
     var claims = {hello: 'world'}
     var keys = [
-      {keyid: 'key1', secret: '12345'}, 
-      {keyid: 'key2',secret: 'abcd'}
+      {kid: 'key1', secret: '12345'}, 
+      {kid: 'key2',secret: 'abcd'}
     ];
     var currentKey = 0
     var expectedSecret = keys[currentKey].secret
@@ -16,11 +16,11 @@ describe('demonstrate a key lookup on verify', function () {
     var token = new nJwt.Jwt(claims)
       .setSigningAlgorithm('HS256')
       .setSigningKey(expectedSecret)
-      .setSigningKeyId(keys[currentKey].keyid)
+      .setSigningKeyId(keys[currentKey].kid)
       .compact();
 
     var jwt = new nJwt.Parser().parse(token);
-    var found = keys.find(k => k.keyid === jwt.header.keyid)
+    var found = keys.find(k => k.kid === jwt.header.kid)
 
     assert.equal(found.secret, expectedSecret);
 
@@ -44,8 +44,8 @@ describe('demonstrate a key lookup on verify', function () {
     var claims = {hello: 'world'}
 
     var keys = [
-      {keyid: 'key1', secret: '12345'}, 
-      {keyid: 'key2',secret: 'abcd'}
+      {kid: 'key1', secret: '12345'}, 
+      {kid: 'key2',secret: 'abcd'}
     ];
     var currentKey = 0
 
@@ -53,13 +53,13 @@ describe('demonstrate a key lookup on verify', function () {
     var token = new nJwt.Jwt(claims)
       .setSigningAlgorithm('HS256')
       .setSigningKey(keys[currentKey].secret)
-      .setSigningKeyId(keys[currentKey].keyid)
+      .setSigningKeyId(keys[currentKey].kid)
       .compact();
 
     // Parse the tokent
     var jwt = new nJwt.Parser().parse(token);
     // lookup the key
-    var found = keys.find(k => k.keyid === jwt.header.keyid)
+    var found = keys.find(k => k.kid === jwt.header.kid)
     // then verify
     var verifier = new nJwt.Verifier()
       .setSigningAlgorithm('HS256')
