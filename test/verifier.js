@@ -329,7 +329,7 @@ describe('Verifier().verify() ',function(){
     });
   });
 
-  describe('verify and existing Jwt object', function () {
+  describe('verify an existing Jwt object', function () {
     var result = null
     var claims = { hello: 'world' }
 
