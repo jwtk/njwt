@@ -249,7 +249,7 @@ none | No digital signature or MAC value included
     var token = new nJwt.Jwt(claims)
       .setSigningAlgorithm('HS256')
       .setSigningKey(keys[currentKey].secret)
-      .setSigningkid(keys[currentKey].kid)
+      .setSigningKeyId(keys[currentKey].kid)
       .compact();
 
     // Parse the tokent
