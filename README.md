@@ -240,8 +240,8 @@ none | No digital signature or MAC value included
     var claims = {hello: 'world'}
 
     var keys = [
-      {keyid: 'key1', secret: '12345'}, 
-      {keyid: 'key2',secret: 'abcd'}
+      {kid: 'key1', secret: '12345'}, 
+      {kid: 'key2',secret: 'abcd'}
     ];
     var currentKey = 0
 
@@ -249,13 +249,13 @@ none | No digital signature or MAC value included
     var token = new nJwt.Jwt(claims)
       .setSigningAlgorithm('HS256')
       .setSigningKey(keys[currentKey].secret)
-      .setSigningKeyId(keys[currentKey].keyid)
+      .setSigningkid(keys[currentKey].kid)
       .compact();
 
     // Parse the tokent
     var jwt = new nJwt.Parser().parse(token);
     // lookup the key
-    var found = keys.find(k => k.keyid === jwt.header.keyid)
+    var found = keys.find(k => k.kid === jwt.header.kid)
     // then verify
     var verifier = new nJwt.Verifier()
       .setSigningAlgorithm('HS256')
