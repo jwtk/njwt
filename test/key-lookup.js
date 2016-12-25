@@ -49,6 +49,7 @@ describe('demonstrate a key lookup on verify', function () {
     ];
     var currentKey = 0
 
+    // ENCODE
     // create a token
     var token = new nJwt.Jwt(claims)
       .setSigningAlgorithm('HS256')
@@ -56,6 +57,7 @@ describe('demonstrate a key lookup on verify', function () {
       .setSigningKeyId(keys[currentKey].kid)
       .compact();
 
+    // DECODE
     // Parse the tokent
     var jwt = new nJwt.Parser().parse(token);
     // lookup the key
