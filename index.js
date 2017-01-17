@@ -420,6 +420,7 @@ function JwtVerifier() {
 
 JwtVerifier.prototype.withKeyResolver = function withKeyResolver(keyResolver) {
   this._keyResolver = keyResolver;
+  return this;
 }
 
 JwtVerifier.prototype.verify = function verify(jwtString,secret,alg,cb) {
@@ -432,7 +433,7 @@ JwtVerifier.prototype.verify = function verify(jwtString,secret,alg,cb) {
 
   var verifier = new Verifier();
 
-  if (typeof this.keyResolver === 'function') {
+  if (typeof this._keyResolver === 'function') {
     verifier.setKeyResolver(this._keyResolver);
   }
 
@@ -455,6 +456,7 @@ var jwtLib = {
   Jwt: Jwt,
   JwtBody: JwtBody,
   JwtHeader: JwtHeader,
+  JwtVerifier: JwtVerifier,
   Verifier: Verifier,
   base64urlEncode: base64urlEncode,
   base64urlUnescape:base64urlUnescape,
