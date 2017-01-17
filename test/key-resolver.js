@@ -12,7 +12,7 @@ describe('njwt.createVerifier', function() {
 
 describe('JwtVerifier', function() {
   it('should construct itself if called without new', function() {
-    assert((new nJwt.JwtVerifier()) instanceof nJwt.JwtVerifier);
+    assert(nJwt.JwtVerifier() instanceof nJwt.JwtVerifier);
   });
 
   describe('.withKeyResolver()', function() {
