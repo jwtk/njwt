@@ -80,6 +80,42 @@ describe('JwtVerifier', function() {
         });
       });
     });
+
+    describe('passing the error from the keyResolver', function() {
+      var keyResolver;
+      var error;
+      var jwtToken;
+      var jwtVerifier;
+
+      beforeEach(function() {
+        error = new Error('key resolver error');
+        keyResolver = function(kid, cb) {
+          cb(error);
+        };
+
+        jwtVerifier = nJwt.createVerifier().withKeyResolver(keyResolver);
+        jwtToken = new nJwt.Jwt().setSigningAlgorithm('none').compact();
+      });
+
+      describe('synchronously', function() {
+        it('should throw the error', function() {
+          var verify = function() {
+            jwtVerifier.verify(jwtToken);
+          };
+
+          assert.throws(verify, error);
+        });
+      });
+
+      describe('asynchronously', function() {
+        it('should pass the error to the callback', function(done) {
+          jwtVerifier.verify(jwtToken, function(err) {
+            assert.equal(err, error);
+            done();
+          });
+        });
+      });
+    });
   });
 
   describe('keyResolver context', function() {
