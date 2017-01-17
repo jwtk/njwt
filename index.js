@@ -327,7 +327,7 @@ Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
   return this;
 };
 Verifier.prototype.setKeyResolver = function setKeyResolver(keyResolver) {
-  this.keyResolver = keyResolver;
+  this.keyResolver = keyResolver.bind(this);
 };
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
 
