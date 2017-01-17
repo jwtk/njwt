@@ -190,6 +190,53 @@ var jwt = nJwt.create({},secret);
 jwt.body.scope = 'admins';
 ````
 
+### Using a key resolver
+If your application is using multiple signing keys, nJwt provides a handy little
+feature that allows you to detect which signing key to use for token verification.
+
+You can pass a `keyResolver` function that will be passed the header `kid` field
+for inspection, if specified. You can then inspect the `kid` and return the signing
+key which should be used for verifying the JWT.
+
+The key resolver can be set on the verifier created via `nJwt.createVerifier`,
+using the `withKeyResolver` method. The verifier also exposes the `verify` method.
+Other than using a `keyResolver` when one is defined, it works the same as
+`nJwt.verify`:
+
+```javascript
+function myKeyResolver(kid, cb) {
+  if (kid === firstKid) {
+    return firstSigningKey;
+  }
+
+  return secondSigningKey;
+}
+
+var verifier =
+  nJwt.createVerifier().withKeyResolver(myKeyResolver);
+
+// synchronously
+try {
+  verifier.verify(token);
+} catch(e) {
+  console.log(e);
+}
+
+// asynchronously
+verifier.verify(token, function(err, verifiedJwt) {
+  if (err) {
+    return console.log(err);
+  }
+
+  console.log(verifiedJwt);
+});
+```
+
+The `keyResolver` function context (`this`) will be bound to the context of the
+`Verifier` used to verify the JWT. This means that if a `signingKey` is passed
+to the `verify` method as the second parameter, the `keyResolver` can access it
+as `this.signingKey`.
+
 #### Expiration Claim
 
 A convenience method is supplied for modifying the `exp` claim.  You can modify
@@ -239,4 +286,3 @@ none | No digital signature or MAC value included
 The following features are not yet supported by this library:
 
 * Encrypting the JWT (aka JWE)
-* Signing key resolver (using the `kid` field)
