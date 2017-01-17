@@ -81,4 +81,28 @@ describe('JwtVerifier', function() {
       });
     });
   });
+
+  describe('keyResolver context', function() {
+    var signingKey;
+    var keyResolver;
+    var jwtVerifier;
+    var jwtToken;
+
+    before(function() {
+      signingKey = uuid();
+      keyResolver = function(kid, cb) {
+        assert.instanceOf(this, nJwt.Verifier);
+        cb(null, this.signingKey);
+      };
+
+      jwtVerifier = nJwt.createVerifier().withKeyResolver(keyResolver);
+      jwtToken = new nJwt.Jwt().setSigningAlgorithm('none').compact();
+    });
+
+    it('should be set to the Verifier instance', function(done) {
+      jwtVerifier.verify(jwtToken, signingKey, 'none', function() {
+        done();
+      });
+    });
+  });
 });
