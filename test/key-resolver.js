@@ -25,7 +25,7 @@ describe('JwtVerifier', function() {
     it('should set the ._keyResolver', function() {
       var jwtVerifier = new nJwt.JwtVerifier();
       jwtVerifier.withKeyResolver(resolver);
-      assert(jwtVerifier._keyResolver === resolver);
+      assert.isDefined(jwtVerifier._keyResolver);
     });
 
     it('should return the JwtVerifier', function() {
