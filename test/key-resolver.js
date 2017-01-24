@@ -50,8 +50,7 @@ describe('Verifier', function() {
 
         jwtVerifier = nJwt.createVerifier().withKeyResolver(keyResolver);
 
-        var jwt = new nJwt.create({}, signingKey);
-        jwt.header.kid = keyKid;
+        var jwt = new nJwt.create({}, signingKey).setHeader('kid', keyKid);
         jwtToken = jwt.compact();
       });
 

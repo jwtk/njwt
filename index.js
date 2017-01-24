@@ -158,6 +158,14 @@ function Jwt(claims, enforceDefaultFields){
 
   return this;
 }
+Jwt.prototype.setClaim = function setClaim(claim, value) {
+  this.body[claim] = value;
+  return this;
+};
+Jwt.prototype.setHeader = function setHeader(claim, value) {
+  this.header[claim] = value;
+  return this;
+};
 Jwt.prototype.setJti = function setJti(jti) {
   this.body.jti = jti;
   return this;
