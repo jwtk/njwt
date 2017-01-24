@@ -68,6 +68,10 @@ function handleError(cb,err,value){
   }
 }
 
+function defaultKeyResolver(kid, cb) {
+  return cb(null, this.signingKey);
+}
+
 function JwtError(message) {
   this.name = 'JwtError';
   this.message = this.userMessage = message;
@@ -154,6 +158,14 @@ function Jwt(claims, enforceDefaultFields){
 
   return this;
 }
+Jwt.prototype.setClaim = function setClaim(claim, value) {
+  this.body[claim] = value;
+  return this;
+};
+Jwt.prototype.setHeader = function setHeader(claim, value) {
+  this.header[claim] = value;
+  return this;
+};
 Jwt.prototype.setJti = function setJti(jti) {
   this.body.jti = jti;
   return this;
@@ -308,6 +320,7 @@ function Verifier(){
     return new Verifier();
   }
   this.setSigningAlgorithm('HS256');
+  this.setKeyResolver(defaultKeyResolver.bind(this));
   return this;
 }
 Verifier.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
@@ -320,6 +333,9 @@ Verifier.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
 Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
   this.signingKey = keyStr;
   return this;
+};
+Verifier.prototype.setKeyResolver = function setKeyResolver(keyResolver) {
+  this.keyResolver = keyResolver.bind(this);
 };
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
 
@@ -356,46 +372,59 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var digstInput = jwt.verificationInput;
   var verified, digest;
 
-  if( cryptoAlgName==='none') {
-    verified = true;
-  } else if(signingType === 'hmac') {
-    digest = crypto.createHmac(cryptoAlgName, this.signingKey)
-      .update(digstInput)
-      .digest('base64');
-    verified = signature === digest;
-  } else {
-    var unescapedSignature;
-    var signatureType = undefined;
+  return this.keyResolver(header.kid, function(err, signingKey) {
 
-    if (isECDSA(header.alg)) {
-      try {
-        unescapedSignature = ecdsaSigFormatter.joseToDer(signature, header.alg);
-      } catch (err) {
-        return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body,err));
-      }
-    } else {
-      signatureType = 'base64';
-      unescapedSignature = base64urlUnescape(signature);
+    if (err) {
+      return done(new JwtParseError(util.format(properties.errors.KEY_RESOLVER_ERROR, header.kid),jwtString,header,body, err));
     }
 
-    verified = crypto.createVerify(cryptoAlgName)
-      .update(digstInput)
-      .verify(this.signingKey, unescapedSignature, signatureType);
-  }
 
-  var newJwt = new Jwt(body, false);
+    if( cryptoAlgName==='none') {
+      verified = true;
+    } else if(signingType === 'hmac') {
+      digest = crypto.createHmac(cryptoAlgName, signingKey)
+        .update(digstInput)
+        .digest('base64');
+      verified = signature === digest;
+    } else {
+      var unescapedSignature;
+      var signatureType = undefined;
 
-  newJwt.toString = function () {
-    return jwtString;
-  };
+      if (isECDSA(header.alg)) {
+        try {
+          unescapedSignature = ecdsaSigFormatter.joseToDer(signature, header.alg);
+        } catch (err) {
+          return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body,err));
+        }
+      } else {
+        signatureType = 'base64';
+        unescapedSignature = base64urlUnescape(signature);
+      }
 
-  newJwt.header = new JwtHeader(header);
+      verified = crypto.createVerify(cryptoAlgName)
+        .update(digstInput)
+        .verify(signingKey, unescapedSignature, signatureType);
+    }
 
-  if (!verified) {
-    return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body));
-  }
+    var newJwt = new Jwt(body, false);
 
-  return done(null, newJwt);
+    newJwt.toString = function () {
+      return jwtString;
+    };
+
+    newJwt.header = new JwtHeader(header);
+
+    if (!verified) {
+      return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body));
+    }
+
+    return done(null, newJwt);
+  });
+};
+
+Verifier.prototype.withKeyResolver = function withKeyResolver(keyResolver) {
+  this.keyResolver = keyResolver;
+  return this;
 };
 
 var jwtLib = {
@@ -405,30 +434,31 @@ var jwtLib = {
   Verifier: Verifier,
   base64urlEncode: base64urlEncode,
   base64urlUnescape:base64urlUnescape,
-  verify: function(jwtString,secret,alg,cb){
-    var args = Array.prototype.slice.call(arguments);
+  verify: function(/*jwtTokenString, [signingKey], [algOverride], [callbck] */){
 
-    if(typeof args[args.length-1]==='function'){
-      cb = args.pop();
-    }else{
-      cb = null;
-    }
+    var args = Array.prototype.slice.call(arguments);
+    var cb = typeof args[args.length-1] === 'function' ? args.pop() : null;
 
     var verifier = new Verifier();
 
     if(args.length===3){
-      verifier.setSigningAlgorithm(alg);
-    }else{
-      verifier.setSigningAlgorithm('HS256');
+      verifier.setSigningAlgorithm(args[2]);
+      verifier.setSigningKey(args[1]);
+    }
+
+    if(args.length===2){
+      verifier.setSigningKey(args[1]);
     }
 
     if(args.length===1){
       verifier.setSigningAlgorithm('none');
-    }else{
-      verifier.setSigningKey(secret);
     }
 
-    return verifier.verify(jwtString,cb);
+    return verifier.verify(args[0], cb);
+
+  },
+  createVerifier: function(){
+    return new Verifier();
   },
   create: function(claims,secret,alg){
     var args = Array.prototype.slice.call(arguments);

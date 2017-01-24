@@ -183,12 +183,79 @@ examples create the same claims body:
 var claims = {
   scope: 'admins'
 }
+
 var jwt = nJwt.create(claims,secret);
-````
-```javascript
-var jwt = nJwt.create({},secret);
+
 jwt.body.scope = 'admins';
+
+jwt.setClaim('otherClaim', 'value');
+
 ````
+
+#### Headers
+
+You can manually modify headers object, or use the `setHeader()` method:
+
+```javascript
+var jwt = nJwt.create({}, keyMap.kid_a);
+
+jwt.headers.myClaim = 'foo';
+
+jwt.setHeader('kid', 'kid_a');
+```
+
+### Using a key resolver
+If your application is using multiple signing keys, nJwt provides a handy little feature that allows you to resolve which signing key should be used to verify a token.
+
+To do this, you first need to manually create a verifier instance, using `nJwt.createVerifier()`, and then provide your key resolution function to the `withKeyResolver()` method:
+
+```javascript
+var keyMap = {
+  kid_a: '<secure signing key>',
+  kid_b: '<secure signing key>'
+};
+
+function myKeyResolver(kid, cb) {
+  var key = keyMap[kid];
+
+  if (key) {
+    return cb(null, key);
+  }
+
+  cb(new Error('Unknown kid'));
+}
+
+var tokenA = nJwt.create({}, keyMap.kid_a).setHeader('kid', 'kid_a').compact();
+
+var tokenB = nJwt.create({}, 'foo').setHeader('kid', 'bar').compact();
+
+var verifier = nJwt.createVerifier().withKeyResolver(myKeyResolver);
+
+// synchronously
+
+try {
+
+  // This will pass and print the result
+
+  var parsedJwt = verifier.verify(tokenA);
+  console.log(parsedJwt);
+
+} catch(e) {
+  console.log(e);
+}
+
+// asynchronously
+
+verifier.verify(tokenB, function(err, verifiedJwt) {
+  if (err) {
+    return console.log(err);  // This error with "'Error while resolving signing key for kid "bar"'"
+  }
+
+  console.log(verifiedJwt);
+});
+```
+
+
 
 #### Expiration Claim
 
@@ -239,4 +306,3 @@ none | No digital signature or MAC value included
 The following features are not yet supported by this library:
 
 * Encrypting the JWT (aka JWE)
-* Signing key resolver (using the `kid` field)

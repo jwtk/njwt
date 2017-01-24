@@ -8,12 +8,27 @@ describe('Jwt',function() {
     assert(nJwt.Jwt() instanceof nJwt.Jwt);
   });
 
+  describe('.setClaim()',function(){
+    it('should set a claim on the claims body',function(){
+      var myClaim = uuid();
+      assert.equal(nJwt.Jwt().setClaim('myClaim', myClaim).body.myClaim,myClaim);
+    });
+  });
+
+  describe('.setHeader()',function(){
+    it('should set a header param on the header',function(){
+      var kid = uuid();
+      assert.equal(nJwt.Jwt().setHeader('kid', kid).header.kid,kid);
+    });
+  });
+
   describe('.setSubject()',function(){
     it('should set the sub claim',function(){
       var sub = uuid();
       assert.equal(nJwt.Jwt().setSubject(sub).body.sub,sub);
     });
   });
+
   describe('.setIssuer()',function(){
     it('should set the iss claim',function(){
       var iss = uuid();

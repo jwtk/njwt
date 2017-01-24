@@ -4,7 +4,7 @@
   "description": "JWT Library for Node.js",
   "main": "index.js",
   "scripts": {
-    "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec --no-timeouts; cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js; rm -rf ./coverage",
+    "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly test/ -- -R spec --no-timeouts; cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js; rm -rf ./coverage",
     "test-watch": "mocha --timeout=5000 --reporter dot --check-leaks -w ./*.js test/ ",
     "test-debug": "mocha --timeout=5000 --debug --reporter dot --check-leaks -w ./*.js test/ ",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --timeout=5000 --reporter dot --check-leaks test/"
@@ -28,11 +28,11 @@
   },
   "devDependencies": {
     "chai": "^2.2.0",
-    "coveralls": "^2.11.2",
-    "istanbul": "^0.3.15",
+    "coveralls": "^2.11.15",
+    "istanbul": "^0.4.5",
     "jsonwebtoken": "^5.0.2",
     "jwt-simple": "^0.3.0",
-    "mocha": "^2.2.3",
+    "mocha": "^3.2.0",
     "secure-random": "^1.1.1"
   }
 }
