@@ -191,51 +191,57 @@ jwt.body.scope = 'admins';
 ````
 
 ### Using a key resolver
-If your application is using multiple signing keys, nJwt provides a handy little
-feature that allows you to detect which signing key to use for token verification.
+If your application is using multiple signing keys, nJwt provides a handy little feature that allows you to resolve which signing key should be used to verify a token.
 
-You can pass a `keyResolver` function that will be passed the header `kid` field
-for inspection, if specified. You can then inspect the `kid` and return the signing
-key which should be used for verifying the JWT.
-
-The key resolver can be set on the verifier created via `nJwt.createVerifier`,
-using the `withKeyResolver` method. The verifier also exposes the `verify` method.
-Other than using a `keyResolver` when one is defined, it works the same as
-`nJwt.verify`:
+To do this, you first need to manually create a verifier instance, using `nJwt.createVerifier()`, and then provide your key resolution function to the `withKeyResolver()` method:
 
 ```javascript
+var keyMap = {
+  kid_a: '<secure signing key>',
+  kid_b: '<secure signing key>'
+};
+
 function myKeyResolver(kid, cb) {
-  if (kid === firstKid) {
-    return firstSigningKey;
+  var key = keyMap[kid];
+
+  if (key) {
+    return cb(null, key);
   }
 
-  return secondSigningKey;
+  cb(new Error('Unknown kid'));
 }
 
-var verifier =
-  nJwt.createVerifier().withKeyResolver(myKeyResolver);
+var jwtA = nJwt.create({}, keyMap.kid_a);
+
+jwtA.header.kid = 'kid_a';
+
+var jwtB = nJwt.create({}, 'foo');
+
+jwtB.header.kid = 'bar';
+
+var verifier = nJwt.createVerifier().withKeyResolver(myKeyResolver);
 
 // synchronously
+
 try {
-  verifier.verify(token);
+  var parsedJwt = verifier.verify(jwtA.compact()); // This will pass and print the result
+  console.log(parsedJwt);
 } catch(e) {
   console.log(e);
 }
 
 // asynchronously
-verifier.verify(token, function(err, verifiedJwt) {
+
+verifier.verify(jwtB.compact(), function(err, verifiedJwt) {
   if (err) {
-    return console.log(err);
+    return console.log(err);  // This error with 'Error while resolving signing key for kid "bar"'
   }
 
   console.log(verifiedJwt);
 });
 ```
 
-The `keyResolver` function context (`this`) will be bound to the context of the
-`Verifier` used to verify the JWT. This means that if a `signingKey` is passed
-to the `verify` method as the second parameter, the `keyResolver` can access it
-as `this.signingKey`.
+
 
 #### Expiration Claim
 

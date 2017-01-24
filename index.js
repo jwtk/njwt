@@ -365,9 +365,11 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var verified, digest;
 
   return this.keyResolver(header.kid, function(err, signingKey) {
+
     if (err) {
-      return done(err);
+      return done(new JwtParseError(util.format(properties.errors.KEY_RESOLVER_ERROR, header.kid),jwtString,header,body, err));
     }
+
 
     if( cryptoAlgName==='none') {
       verified = true;
@@ -412,60 +414,43 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   });
 };
 
-function JwtVerifier() {
-  if (!(this instanceof JwtVerifier)) {
-    return new JwtVerifier();
-  }
-}
-
-JwtVerifier.prototype.withKeyResolver = function withKeyResolver(keyResolver) {
-  this._keyResolver = keyResolver;
+Verifier.prototype.withKeyResolver = function withKeyResolver(keyResolver) {
+  this.keyResolver = keyResolver;
   return this;
-}
-
-JwtVerifier.prototype.verify = function verify(jwtString,secret,alg,cb) {
-  var args = Array.prototype.slice.call(arguments);
-  if (typeof args[args.length-1]==='function') {
-    cb = args.pop();
-  } else {
-    cb = null;
-  }
-
-  var verifier = new Verifier();
-
-  if (typeof this._keyResolver === 'function') {
-    verifier.setKeyResolver(this._keyResolver);
-  }
-
-  if(args.length===3){
-    verifier.setSigningAlgorithm(alg);
-  }else{
-    verifier.setSigningAlgorithm('HS256');
-  }
-
-  if(args.length===1){
-    verifier.setSigningAlgorithm('none');
-  }else{
-    verifier.setSigningKey(secret);
-  }
-
-  return verifier.verify(jwtString,cb);
 };
 
 var jwtLib = {
   Jwt: Jwt,
   JwtBody: JwtBody,
   JwtHeader: JwtHeader,
-  JwtVerifier: JwtVerifier,
   Verifier: Verifier,
   base64urlEncode: base64urlEncode,
   base64urlUnescape:base64urlUnescape,
-  verify: function(){
-    var jwtVerifier = this.createVerifier();
-    return jwtVerifier.verify.apply(jwtVerifier, arguments);
+  verify: function(/*jwtTokenString, [signingKey], [algOverride], [callbck] */){
+
+    var args = Array.prototype.slice.call(arguments);
+    var cb = typeof args[args.length-1] === 'function' ? args.pop() : null;
+
+    var verifier = new Verifier();
+
+    if(args.length===3){
+      verifier.setSigningAlgorithm(args[2]);
+      verifier.setSigningKey(args[1]);
+    }
+
+    if(args.length===2){
+      verifier.setSigningKey(args[1]);
+    }
+
+    if(args.length===1){
+      verifier.setSigningAlgorithm('none');
+    }
+
+    return verifier.verify(args[0], cb);
+
   },
   createVerifier: function(){
-    return new JwtVerifier();
+    return new Verifier();
   },
   create: function(claims,secret,alg){
     var args = Array.prototype.slice.call(arguments);

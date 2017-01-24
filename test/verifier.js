@@ -13,6 +13,15 @@ describe('Verifier',function(){
   });
 });
 
+describe('Verifier().createVerifier() ',function(){
+  it('should create a Verifier instance', function() {
+
+    var verifier = nJwt.createVerifier();
+    assert(verifier instanceof nJwt.Verifier);
+
+  });
+});
+
 describe('Verifier().setSigningAlgorithm() ',function(){
   describe('if called with an unsupported algorithm',function(){
 

@@ -1,18 +1,13 @@
-var uuid = require('uuid');
 var assert = require('chai').assert;
+var util = require('util');
+var uuid = require('uuid');
 
 var nJwt = require('../');
+var properties = require('../properties.json');
 
-describe('njwt.createVerifier', function() {
-  it('should create a JwtVerifier instance', function() {
-    var verifier = nJwt.createVerifier();
-    assert(verifier instanceof nJwt.JwtVerifier);
-  });
-});
-
-describe('JwtVerifier', function() {
+describe('Verifier', function() {
   it('should construct itself if called without new', function() {
-    assert(nJwt.JwtVerifier() instanceof nJwt.JwtVerifier);
+    assert(nJwt.Verifier() instanceof nJwt.Verifier);
   });
 
   describe('.withKeyResolver()', function() {
@@ -22,14 +17,14 @@ describe('JwtVerifier', function() {
       resolver = function() {};
     });
 
-    it('should set the ._keyResolver', function() {
-      var jwtVerifier = new nJwt.JwtVerifier();
+    it('should set the .keyResolver', function() {
+      var jwtVerifier = new nJwt.Verifier();
       jwtVerifier.withKeyResolver(resolver);
-      assert.isDefined(jwtVerifier._keyResolver);
+      assert.isDefined(jwtVerifier.keyResolver);
     });
 
-    it('should return the JwtVerifier', function() {
-      var jwtVerifier = new nJwt.JwtVerifier();
+    it('should return the Verifier', function() {
+      var jwtVerifier = new nJwt.Verifier();
       assert(jwtVerifier.withKeyResolver(function() {}) === jwtVerifier);
     });
   });
@@ -40,7 +35,6 @@ describe('JwtVerifier', function() {
       var keyResolver;
       var keyKid;
       var signingKey;
-      var mutatedSigningKey;
       var jwtVerifier;
       var jwtToken;
 
@@ -48,7 +42,6 @@ describe('JwtVerifier', function() {
         callCount = 0;
         keyKid = '123';
         signingKey = uuid();
-        mutatedSigningKey = signingKey + uuid();
         keyResolver = function(kid, cb) {
           callCount++;
           assert(kid === keyKid);
@@ -57,14 +50,14 @@ describe('JwtVerifier', function() {
 
         jwtVerifier = nJwt.createVerifier().withKeyResolver(keyResolver);
 
-        var jwt = new nJwt.Jwt().setSigningAlgorithm('none');
+        var jwt = new nJwt.create({}, signingKey);
         jwt.header.kid = keyKid;
         jwtToken = jwt.compact();
       });
 
       it('should work synchronously', function() {
         var verify = function() {
-          jwtVerifier.verify(jwtToken, mutatedSigningKey, 'none');
+          jwtVerifier.verify(jwtToken);
         };
 
         assert.doesNotThrow(verify);
@@ -72,7 +65,7 @@ describe('JwtVerifier', function() {
       });
 
       it('should work asynchronously', function(done) {
-        jwtVerifier.verify(jwtToken, mutatedSigningKey, 'none', function(err, token) {
+        jwtVerifier.verify(jwtToken, function(err, token) {
           assert.isNull(err);
           assert.isNotNull(token);
           assert.equal(callCount, 1);
@@ -94,7 +87,9 @@ describe('JwtVerifier', function() {
         };
 
         jwtVerifier = nJwt.createVerifier().withKeyResolver(keyResolver);
-        jwtToken = new nJwt.Jwt().setSigningAlgorithm('none').compact();
+        var jwt = new nJwt.create({},'foo');
+        jwt.header.kid = 'foo'
+        jwtToken = jwt.compact();
       });
 
       describe('synchronously', function() {
@@ -103,41 +98,19 @@ describe('JwtVerifier', function() {
             jwtVerifier.verify(jwtToken);
           };
 
-          assert.throws(verify, error);
+          assert.throws(verify, util.format(properties.errors.KEY_RESOLVER_ERROR, 'foo'));
         });
       });
 
       describe('asynchronously', function() {
         it('should pass the error to the callback', function(done) {
           jwtVerifier.verify(jwtToken, function(err) {
-            assert.equal(err, error);
+            assert.instanceOf(err, Error);
+            assert.equal(err.message, util.format(properties.errors.KEY_RESOLVER_ERROR, 'foo'));
+            assert.equal(err.innerError, error);
             done();
           });
         });
-      });
-    });
-  });
-
-  describe('keyResolver context', function() {
-    var signingKey;
-    var keyResolver;
-    var jwtVerifier;
-    var jwtToken;
-
-    before(function() {
-      signingKey = uuid();
-      keyResolver = function(kid, cb) {
-        assert.instanceOf(this, nJwt.Verifier);
-        cb(null, this.signingKey);
-      };
-
-      jwtVerifier = nJwt.createVerifier().withKeyResolver(keyResolver);
-      jwtToken = new nJwt.Jwt().setSigningAlgorithm('none').compact();
-    });
-
-    it('should be set to the Verifier instance', function(done) {
-      jwtVerifier.verify(jwtToken, signingKey, 'none', function() {
-        done();
       });
     });
   });
