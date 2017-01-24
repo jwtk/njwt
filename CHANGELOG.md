@@ -1,5 +1,10 @@
 # nJwt Change Log
 
+### 0.4.0
+
+* Added a key resolver interface, use `nJwt.createVerifier().withKeyResolver(function(kid, cb){ })`
+* Added `jwt.setClaim(claim, value)` and `jwt.setHeader(param, value)` for setting body claims and header values in a chain-able way.
+
 ### 0.3.2
 
 Added support for the `nbf`, "not before", claim.
