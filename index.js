@@ -477,7 +477,7 @@ var jwtLib = {
       jwt.setSigningAlgorithm(args.length===3 ? alg : 'HS256');
       jwt.setSigningKey(secret);
     }
-    jwt.setExpiration((nowEpochSeconds() + (60*60))*1000); // one hour
+    jwt.setExpiration(claims.exp * 1000 || (nowEpochSeconds() + (60 * 60)) * 1000);
     return jwt;
   }
 };
