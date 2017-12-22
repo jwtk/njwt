@@ -321,6 +321,7 @@ function Verifier(){
   }
   this.setSigningAlgorithm('HS256');
   this.setKeyResolver(defaultKeyResolver.bind(this));
+  this.keyResolveByJwt = false;
   return this;
 }
 Verifier.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
@@ -336,6 +337,10 @@ Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
 };
 Verifier.prototype.setKeyResolver = function setKeyResolver(keyResolver) {
   this.keyResolver = keyResolver.bind(this);
+};
+Verifier.prototype.setKeyResolveByJwt = function setResolveByJwt(keyResolveByJwt) {
+  this.keyResolveByJwt = keyResolveByJwt;
+  return this;
 };
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
 
@@ -372,7 +377,9 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var digstInput = jwt.verificationInput;
   var verified, digest;
 
-  return this.keyResolver(header.kid, function(err, signingKey) {
+  var resolvable = this.keyResolveByJwt ? jwt : header.kid;
+
+  return this.keyResolver(resolvable, function(err, signingKey) {
 
     if (err) {
       return done(new JwtParseError(util.format(properties.errors.KEY_RESOLVER_ERROR, header.kid),jwtString,header,body, err));

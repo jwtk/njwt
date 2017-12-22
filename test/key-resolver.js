@@ -75,18 +75,21 @@ describe('Verifier', function() {
 
     describe('passing the error from the keyResolver', function() {
       var keyResolver;
+      var resolvableReceived;
       var error;
+      var jwt;
       var jwtToken;
       var jwtVerifier;
 
       beforeEach(function() {
         error = new Error('key resolver error');
-        keyResolver = function(kid, cb) {
+        keyResolver = function(resolvable, cb) {
+          resolvableReceived = resolvable;
           cb(error);
         };
 
         jwtVerifier = nJwt.createVerifier().withKeyResolver(keyResolver);
-        var jwt = new nJwt.create({},'foo');
+        jwt = new nJwt.create({},'foo');
         jwt.header.kid = 'foo'
         jwtToken = jwt.compact();
       });
@@ -111,6 +114,18 @@ describe('Verifier', function() {
           });
         });
       });
+
+      describe('key resolve by passing the parsed jwt as the resolvable', function() {
+        it('should throw the error', function() {
+          jwtVerifier.setKeyResolveByJwt(true);
+          var verify = function() {
+            jwtVerifier.verify(jwtToken);
+          };
+          assert.throws(verify, util.format(properties.errors.KEY_RESOLVER_ERROR, 'foo'));
+          assert.equal(resolvableReceived.body.jit, jwt.body.jit,);
+        });
+      });
+
     });
   });
 });

@@ -255,7 +255,7 @@ verifier.verify(tokenB, function(err, verifiedJwt) {
 });
 ```
 
-
+By default the key resolver function is passed provided `kid` property of the JWT header, however, by setting the property `setResolveByJwt(true);` on the verifier the key resolver may be passed a fully parsed JWT object instead.
 
 #### Expiration Claim
 
