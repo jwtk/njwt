@@ -40,7 +40,7 @@ function nowEpochSeconds(){
 }
 
 function base64urlEncode(str) {
-  return new Buffer(str)
+  return Buffer.from(str)
     .toString('base64')
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
@@ -277,7 +277,7 @@ Parser.prototype.isSupportedAlg = isSupportedAlg;
 Parser.prototype.safeJsonParse = function(input) {
   var result;
   try{
-    result = JSON.parse(new Buffer(base64urlUnescape(input),'base64'));
+    result = JSON.parse(Buffer.from(base64urlUnescape(input),'base64'));
   }catch(e){
     return e;
   }
@@ -297,7 +297,7 @@ Parser.prototype.parse = function parse(jwtString,cb){
   var body = this.safeJsonParse(segments[1]);
 
   if(segments[2]){
-    signature = new Buffer(base64urlUnescape(segments[2]),'base64')
+    signature = Buffer.from(base64urlUnescape(segments[2]),'base64')
       .toString('base64');
   }
 
@@ -321,6 +321,7 @@ function Verifier(){
   }
   this.setSigningAlgorithm('HS256');
   this.setKeyResolver(defaultKeyResolver.bind(this));
+  this.keyResolveByJwt = false;
   return this;
 }
 Verifier.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
@@ -336,6 +337,10 @@ Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
 };
 Verifier.prototype.setKeyResolver = function setKeyResolver(keyResolver) {
   this.keyResolver = keyResolver.bind(this);
+};
+Verifier.prototype.setKeyResolveByJwt = function setResolveByJwt(keyResolveByJwt) {
+  this.keyResolveByJwt = keyResolveByJwt;
+  return this;
 };
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
 
@@ -372,7 +377,9 @@ Verifier.prototype.verify = function verify(jwtString,cb){
   var digstInput = jwt.verificationInput;
   var verified, digest;
 
-  return this.keyResolver(header.kid, function(err, signingKey) {
+  var resolvable = this.keyResolveByJwt ? jwt : header.kid;
+
+  return this.keyResolver(resolvable, function(err, signingKey) {
 
     if (err) {
       return done(new JwtParseError(util.format(properties.errors.KEY_RESOLVER_ERROR, header.kid),jwtString,header,body, err));
