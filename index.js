@@ -40,7 +40,7 @@ function nowEpochSeconds(){
 }
 
 function base64urlEncode(str) {
-  return new Buffer(str)
+  return Buffer.from(str)
     .toString('base64')
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
@@ -277,7 +277,7 @@ Parser.prototype.isSupportedAlg = isSupportedAlg;
 Parser.prototype.safeJsonParse = function(input) {
   var result;
   try{
-    result = JSON.parse(new Buffer(base64urlUnescape(input),'base64'));
+    result = JSON.parse(Buffer.from(base64urlUnescape(input),'base64'));
   }catch(e){
     return e;
   }
@@ -297,7 +297,7 @@ Parser.prototype.parse = function parse(jwtString,cb){
   var body = this.safeJsonParse(segments[1]);
 
   if(segments[2]){
-    signature = new Buffer(base64urlUnescape(segments[2]),'base64')
+    signature = Buffer.from(base64urlUnescape(segments[2]),'base64')
       .toString('base64');
   }
 
