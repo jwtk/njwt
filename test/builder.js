@@ -101,7 +101,7 @@ describe('base64 URL Encoding',function(){
     assert.equal(
       nJwt.Jwt.prototype.sign(
         [compactHeader,compactBody].join('.'),
-        'HS256',new Buffer(key,'base64')
+        'HS256',Buffer.from(key,'base64')
       ),
       expectedSignature
     );
