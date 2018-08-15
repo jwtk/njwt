@@ -40,7 +40,7 @@ function nowEpochSeconds(){
 }
 
 function base64urlEncode(data) {
-  const str = typeof data === 'number' ? data.toString() : data
+  const str = typeof data === 'number' ? data.toString() : data;
   return Buffer.from(str)
     .toString('base64')
     .replace(/\+/g, '-')
