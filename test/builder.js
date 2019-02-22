@@ -101,11 +101,18 @@ describe('base64 URL Encoding',function(){
     assert.equal(
       nJwt.Jwt.prototype.sign(
         [compactHeader,compactBody].join('.'),
-        'HS256',new Buffer(key,'base64')
+        'HS256',Buffer.from(key,'base64')
       ),
       expectedSignature
     );
 
+  });
+
+  it('does not create an uninitialized Buffer', function() { 
+  // see https://nodejs.org/api/buffer.html#buffer_buffer_from_buffer_alloc_and_buffer_allocunsafe
+    var fromDigits = nJwt.base64urlEncode(10);
+    var fromString = nJwt.base64urlEncode('10');
+    assert.equal(fromDigits, fromString);
   });
 });
 
