@@ -107,6 +107,12 @@ describe('base64 URL Encoding',function(){
     );
 
   });
+
+  it('does not create an uninitialized Buffer', function() { 
+    var fromDigits = nJwt.base64urlEncode(10);
+    var fromString = nJwt.base64urlEncode('10');
+    assert.equal(fromDigits, fromString);
+  });
 });
 
 
