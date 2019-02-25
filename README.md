@@ -280,9 +280,9 @@ the `nbf` claim by passing a `Date` object, or a millisecond value, to the
 ```javascript
 var jwt = nJwt.create(claims,secret);
 
-jwt.setNotbefore(new Date('2015-07-01')); // token is active from this date
-jwt.setNotbefore(new Date().getTime() + (60*60*1000)); // One hour from now
-jwt.setNotbefore(); // Remove the exp claim
+jwt.setNotBefore(new Date('2015-07-01')); // token is active from this date
+jwt.setNotBefore(new Date().getTime() + (60*60*1000)); // One hour from now
+jwt.setNotBefore(); // Remove the exp claim
 ```
 
 
