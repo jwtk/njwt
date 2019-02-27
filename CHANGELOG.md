@@ -2,7 +2,7 @@
 
 ### 0.4.1
 
-* updated `nJwt.base64urlEncode()` to replace deprecated `new Buffer()` with `Buffer.from()`
+* Updated `nJwt.base64urlEncode()` to replace deprecated `new Buffer()` with `Buffer.from()`
 
 ### 0.4.0
 
