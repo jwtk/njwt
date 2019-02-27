@@ -1,5 +1,9 @@
 # nJwt Change Log
 
+### 0.4.1
+
+* Updated `nJwt.base64urlEncode()` to replace deprecated `new Buffer()` with `Buffer.from()`
+
 ### 0.4.0
 
 * Added a key resolver interface, use `nJwt.createVerifier().withKeyResolver(function(kid, cb){ })`
