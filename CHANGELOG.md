@@ -1,5 +1,9 @@
 # nJwt Change Log
 
+### 1.0.0
+
+* Removed support for older Node versions.  Now requires Node 6+.
+
 ### 0.4.1
 
 * Updated `nJwt.base64urlEncode()` to replace deprecated `new Buffer()` with `Buffer.from()`
