@@ -1,6 +1,6 @@
 {
   "name": "njwt",
-  "version": "0.4.1",
+  "version": "1.0.0",
   "description": "JWT Library for Node.js",
   "main": "index.js",
   "scripts": {
@@ -24,15 +24,15 @@
   "homepage": "https://github.com/jwtk/njwt",
   "dependencies": {
     "ecdsa-sig-formatter": "^1.0.5",
-    "uuid": "^2.0.1"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "chai": "^2.2.0",
-    "coveralls": "^2.11.15",
+    "chai": "^4.2.0",
+    "coveralls": "^3.0.3",
     "istanbul": "^0.4.5",
-    "jsonwebtoken": "^5.0.2",
-    "jwt-simple": "^0.3.0",
-    "mocha": "^3.2.0",
+    "jsonwebtoken": "^8.5.0",
+    "jwt-simple": "^0.5.5",
+    "mocha": "^6.0.2",
     "secure-random": "^1.1.1"
   }
 }
