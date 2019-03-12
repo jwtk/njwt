@@ -98,6 +98,15 @@ describe('Jwt',function() {
     });
   });
 
+  describe('.setSigningKeyId()',function(){
+    it('should accept a kid',function(){
+      var kid = '1234'
+      var jwt = new nJwt.Jwt({}, false)
+        .setSigningKeyId(kid);
+        assert.equal(jwt.header.kid, kid);
+    });
+  });
+
   describe('.sign()',function(){
     it('should throw if you give it an unknown algoritm',function(){
       assert.throws(function(){

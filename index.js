@@ -205,6 +205,11 @@ Jwt.prototype.setSigningKey = function setSigningKey(key) {
   this.signingKey = key;
   return this;
 };
+Jwt.prototype.setSigningKeyId = function setSigningKeyId(kid) {
+  this.header.kid = kid;
+  return this;
+};
+
 Jwt.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
   if(!this.isSupportedAlg(alg)){
     throw new JwtError(properties.errors.UNSUPPORTED_SIGNING_ALG);
@@ -271,6 +276,9 @@ Jwt.prototype.isNotBefore = function() {
 };
 
 function Parser(options){
+  if(!(this instanceof Parser)){
+    return new Parser(options);
+  }
   return this;
 }
 
@@ -345,12 +353,16 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
   var done = handleError.bind(null,cb);
 
-  try {
-    jwt = new Parser().parse(jwtString);
-  } catch(e) {
-    return done(e);
+  if (jwtString instanceof Jwt) {
+    jwt = jwtString;
+   // console.log(jwt)
+  } else {
+    try {
+      jwt = new Parser().parse(jwtString);
+    } catch(e) {
+      return done(e);
+    }
   }
-
   var body = jwt.body;
   var header = jwt.header;
   var signature = jwt.signature;
@@ -432,6 +444,7 @@ var jwtLib = {
   Jwt: Jwt,
   JwtBody: JwtBody,
   JwtHeader: JwtHeader,
+  Parser: Parser,
   Verifier: Verifier,
   base64urlEncode: base64urlEncode,
   base64urlUnescape:base64urlUnescape,
