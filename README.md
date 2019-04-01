@@ -301,6 +301,38 @@ ES384 | ECDSA using P-384 curve and SHA-384 hash algorithm
 ES512 | ECDSA using P-521 curve and SHA-512 hash algorithm
 none | No digital signature or MAC value included
 
+## Key Lookup
+
+```javascript
+    var claims = {hello: 'world'}
+
+    var keys = [
+      {kid: 'key1', secret: '12345'}, 
+      {kid: 'key2',secret: 'abcd'}
+    ];
+    var currentKey = 0
+
+    // create a token
+    var token = new nJwt.Jwt(claims)
+      .setSigningAlgorithm('HS256')
+      .setSigningKey(keys[currentKey].secret)
+      .setSigningKeyId(keys[currentKey].kid)
+      .compact();
+
+    // Parse the tokent
+    var jwt = new nJwt.Parser().parse(token);
+    // lookup the key
+    var found = keys.find(k => k.kid === jwt.header.kid)
+    // then verify
+    var verifier = new nJwt.Verifier()
+      .setSigningAlgorithm('HS256')
+      .setSigningKey(found.secret)
+      .verify(token, function (err, res) {
+        if (res.body.hello !== claims.hello)
+          throw(new Error('lookup didnt work'))
+      });
+```
+
 ## Unsupported features
 
 The following features are not yet supported by this library:
