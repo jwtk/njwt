@@ -153,6 +153,13 @@ try{
 }
 ````
 
+To allow clocktolerance use the third argument (in milliseconds):
+````javascript
+nJwt.verify(token, null, null, 2500, function(err,verifiedJwt){
+
+});
+````
+
 ### Changing the algorithm
 
 If you want to change the algorithm from the default `HS256`, you can do so
