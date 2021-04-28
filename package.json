@@ -35,6 +35,17 @@
     "jsonwebtoken": "^8.5.0",
     "jwt-simple": "^0.5.5",
     "mocha": "^6.0.2",
-    "secure-random": "^1.1.1"
+    "secure-random": "^1.1.1",
+    "tsd": "^0.14.0",
+    "typescript": "^4.2.4"
+  },
+  "tsd": {
+    "directory": "test/types",
+    "compilerOptions": {
+      "baseUrl": "./",
+      "paths": {
+        "njwt": ["."]
+      }
+    }
   }
 }
