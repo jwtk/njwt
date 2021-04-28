@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 declare type JSONValue = string | number | boolean | null | JSONValue[] | JSONMap;
 declare type JSONMap = {[key: string]: JSONValue};
 
@@ -23,8 +25,10 @@ declare type SupportedAlgorithms =
 'ES512' |
 'none';
 
-declare type KeyResolver = (kid: string, cb: (err: Error, signingKey: string | Buffer) => Jwt | void | never) => Jwt | void | never;
 declare type IsSupportedAlg = (alg: string | SupportedAlgorithms) => boolean;
+declare type KeyResolver = (kid: string, cb: KeyResolverCallback) => Jwt | void | never;
+
+export declare type KeyResolverCallback = (err: Error, signingKey: string | Buffer) => Jwt | void | never;
 
 export declare function Jwt(claims: JSONMap, enforceDefaultFields: boolean): Jwt;
 export declare class Jwt {
