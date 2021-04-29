@@ -5,10 +5,12 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
+    "lint": "eslint .",
     "test": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly test/ -- -R spec --no-timeouts; cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js; rm -rf ./coverage",
     "test-watch": "mocha --timeout=5000 --reporter dot --check-leaks -w ./*.js test/ ",
     "test-debug": "mocha --timeout=5000 --debug --reporter dot --check-leaks -w ./*.js test/ ",
-    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --timeout=5000 --reporter dot --check-leaks test/"
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha -- --timeout=5000 --reporter dot --check-leaks test/",
+    "test-types": "tsd"
   },
   "repository": {
     "type": "git",
