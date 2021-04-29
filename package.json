@@ -29,8 +29,11 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
     "chai": "^4.2.0",
     "coveralls": "^3.0.3",
+    "eslint": "^7.25.0",
     "istanbul": "^0.4.5",
     "jsonwebtoken": "^8.5.0",
     "jwt-simple": "^0.5.5",
@@ -42,9 +45,12 @@
   "tsd": {
     "directory": "test/types",
     "compilerOptions": {
+      "strict": true,
       "baseUrl": "./",
       "paths": {
-        "njwt": ["."]
+        "njwt": [
+          "."
+        ]
       }
     }
   }
