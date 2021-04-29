@@ -1,5 +1,9 @@
 # nJwt Change Log
 
+### 1.1.0
+
+* [#77](https://github.com/jwtk/njwt/pull/77) Adds TypeScript type definitions.
+
 ### 1.0.0
 
 * Removed support for older Node versions.  Now requires Node 6+.
