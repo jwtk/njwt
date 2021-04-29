@@ -313,6 +313,7 @@ This package includes TypeScript definitions for library interface. They can be 
 
 ```typescript
 import { Jwt, create } from 'njwt';
+import crypto = require('crypto');
 
 const signingKey: Buffer = crypto.randomBytes(256); // Create a highly random byte array of 256 bytes
 const claims = {
