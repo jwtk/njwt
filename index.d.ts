@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import { KeyObject } from 'crypto';
 
 declare type JSONValue = string | number | boolean | null | JSONValue[] | JSONMap;
 declare type JSONMap = {[key: string]: JSONValue};
@@ -25,7 +26,7 @@ declare type SupportedAlgorithms =
 'ES512' |
 'none';
 
-declare type IsSupportedAlg = (alg: string | SupportedAlgorithms) => boolean;
+declare type IsSupportedAlg = (algName: string | SupportedAlgorithms) => boolean;
 declare type KeyResolverCallback = (err: Error | null, signingKey: string | Buffer) => Jwt | undefined | never;
 
 export declare type KeyResolver = (kid: string, cb: KeyResolverCallback) => Jwt | undefined | never;
@@ -46,7 +47,7 @@ export declare class Jwt {
     setSigningKey(key: string | Buffer): Jwt;
     signingKey: string | Buffer;
     setSigningAlgorithm(alg: string): Jwt;
-    sign(payload: string | Buffer | JSONMap, algorithm: string, cryptoInput: string | Buffer): string;
+    sign(payload: string | Buffer | JSONMap, algorithm: string, cryptoInput: string | Buffer | KeyObject): string;
     isSupportedAlg: IsSupportedAlg;
     compact(): string;
     signature: string;
