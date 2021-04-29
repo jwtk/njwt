@@ -14,7 +14,7 @@ declare interface JwtHeaderOptions {
   'x5t#s256'?: string;
 }
 
-declare type SupportedAlgorithms = 
+declare type SupportedAlgorithms =
 'HS256' |
 'HS384' |
 'HS512' |
@@ -26,13 +26,13 @@ declare type SupportedAlgorithms =
 'none';
 
 declare type IsSupportedAlg = (alg: string | SupportedAlgorithms) => boolean;
-declare type KeyResolver = (kid: string, cb: KeyResolverCallback) => Jwt | void | never;
+declare type KeyResolverCallback = (err: Error | null, signingKey: string | Buffer) => Jwt | undefined | never;
 
-export declare type KeyResolverCallback = (err: Error, signingKey: string | Buffer) => Jwt | void | never;
+export declare type KeyResolver = (kid: string, cb: KeyResolverCallback) => Jwt | undefined | never;
 
 export declare function Jwt(claims: JSONMap, enforceDefaultFields: boolean): Jwt;
 export declare class Jwt {
-    constructor(claims: JSONMap, enforceDefaultFields: boolean);
+  constructor(claims: JSONMap, enforceDefaultFields: boolean);
     header: JwtHeader;
     body: JwtBody;
     setClaim(claim: string, value: JSONValue): Jwt;
@@ -56,34 +56,40 @@ export declare class Jwt {
 }
 export declare function JwtBody(claims: JSONMap): JwtBody;
 export declare class JwtBody {
-    constructor(claims: JSONMap);
-    toJSON(): JSONMap;
-    compact(): string;
+  constructor(claims: JSONMap);
+  toJSON(): JSONMap;
+  compact(): string;
 }
 export declare function JwtHeader(header: JwtHeaderOptions): JwtHeader;
 export declare class JwtHeader {
-    constructor(header: JwtHeaderOptions);
+  constructor(header: JwtHeaderOptions);
     typ: string;
     alg: string;
     reservedKeys: string[];
     compact(): string;
 }
 
-
 export declare function Verifier(): Verifier;
 export declare class Verifier {
-    setSigningAlgorithm(alg: string): Verifier | never;
-    signingAlgorithm: SupportedAlgorithms;
-    setSigningKey(keyStr: string | Buffer): Verifier;
-    signingKey: string | Buffer;
-    setKeyResolver(keyResolver: KeyResolver): void;
-    keyResolver: KeyResolver;
-    isSupportedAlg: IsSupportedAlg;
-    verify(jwtString: string | Buffer, cb?: (err: Error, verifiedJwt: Jwt) => unknown | void): Jwt | void | never;
-    withKeyResolver(keyResolver: KeyResolver): Verifier;
+  setSigningAlgorithm(alg: string): Verifier | never;
+  signingAlgorithm: SupportedAlgorithms;
+  setSigningKey(keyStr: string | Buffer): Verifier;
+  signingKey: string | Buffer;
+  setKeyResolver(keyResolver: KeyResolver): void;
+  keyResolver: KeyResolver;
+  isSupportedAlg: IsSupportedAlg;
+  /**
+   * Synchronous mode.
+   */
+  verify(jwtString: string | Buffer): Jwt | never;
+  /**
+   * Async mode.
+   */
+  verify(jwtString: string | Buffer, cb: (err: Error | null, verifiedJwt: Jwt) => void): void | never;
+  withKeyResolver(keyResolver: KeyResolver): Verifier;
 }
 export declare function base64urlEncode(number: number | string): Buffer;
 export declare function base64urlUnescape(str: string): string;
-export declare function verify(...args: unknown[]): Jwt | void | never;
+export declare function verify(jwtTokenString: string | Buffer, signingKey?: string | Buffer, alg?: string, callback?: KeyResolver):  undefined | Jwt | never;
 export declare function createVerifier(): Verifier;
-export declare function create(claims: JSONMap, secret: string | Buffer, alg: string, ...args: unknown[]): Jwt;
+export declare function create(claimsOrSecret: JSONMap | string | Buffer, ...args: unknown[]): Jwt;
