@@ -306,3 +306,17 @@ none | No digital signature or MAC value included
 The following features are not yet supported by this library:
 
 * Encrypting the JWT (aka JWE)
+
+## TypeScript usage
+
+This package includes TypeScript definitions for library interface. They can be used as follows:
+
+```typescript
+import { Jwt, create } from 'njwt';
+
+const signingKey: Buffer = crypto.randomBytes(256); // Create a highly random byte array of 256 bytes
+const claims = {
+  iss: 'http://myapp.com/',  // The URL of your service
+};
+const jwt: Jwt = create(claims, signingKey);
+```
