@@ -6,8 +6,8 @@ var jwtSimple = require('jwt-simple');
 
 describe('this library',function () {
   it('should generate tokens that can be verified by jsonwebtoken',function(done){
-    var key = uuid();
-    var claims = {hello:uuid()};
+    var key = uuid.v4();
+    var claims = {hello:uuid.v4()};
     var jwt = nJwt.create(claims,key);
     var token = jwt.compact();
     assert.doesNotThrow(function(){
@@ -23,8 +23,8 @@ describe('this library',function () {
   });
 
   it('should be able to verify tokens from jsonwebtoken',function(done){
-    var claims = {hello:uuid()};
-    var key = uuid();
+    var claims = {hello:uuid.v4()};
+    var key = uuid.v4();
     var token = jsonwebtoken.sign(claims, key);
     nJwt.verify(token,key,function(err,jwt){
       assert.isNull(err,'An unexpcted error was returned');
@@ -34,8 +34,8 @@ describe('this library',function () {
   });
 
   it('should generate tokens that can be verified by jwt-simple',function(done){
-    var key = uuid();
-    var claims = {hello:uuid()};
+    var key = uuid.v4();
+    var claims = {hello:uuid.v4()};
     var jwt = nJwt.create(claims,key);
     var token = jwt.compact();
     var decoded;
@@ -51,8 +51,8 @@ describe('this library',function () {
   });
 
   it('should be able to verify tokens from jwt-simple',function(done){
-    var claims = {hello:uuid()};
-    var key = uuid();
+    var claims = {hello:uuid.v4()};
+    var key = uuid.v4();
     var token = jwtSimple.encode(claims, key);
     nJwt.verify(token,key,function(err,jwt){
       assert.isNull(err,'An unexpcted error was returned');

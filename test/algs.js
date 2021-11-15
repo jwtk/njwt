@@ -5,15 +5,15 @@ var fs = require('fs');
 var path = require('path');
 
 function itShouldBeAValidJwt(jwt){
-  assert(nJwt.create({},uuid()) instanceof nJwt.Jwt);
+  assert(nJwt.create({},uuid.v4()) instanceof nJwt.Jwt);
   var nowUnix = Math.floor(new Date().getTime()/1000);
-  assert.equal(nJwt.create({},uuid()).body.iat , nowUnix);
+  assert.equal(nJwt.create({},uuid.v4()).body.iat , nowUnix);
   assert(jwt.body.jti.match(/[a-zA-Z0-9]+[-]/));
 }
 
 function testHmacAlg(alg,done){
-  var key = uuid();
-  var claims = { hello: uuid(), debug: true };
+  var key = uuid.v4();
+  var claims = { hello: uuid.v4(), debug: true };
   var jwt = nJwt.create(claims,key,alg);
   var token = jwt.compact();
 
@@ -27,7 +27,7 @@ function testHmacAlg(alg,done){
 }
 
 function testKeyAlg(alg,keyPair,done){
-  var claims = { hello: uuid(), debug: true };
+  var claims = { hello: uuid.v4(), debug: true };
   var jwt = nJwt.create(claims,keyPair.private,alg);
   var token = jwt.compact();
 

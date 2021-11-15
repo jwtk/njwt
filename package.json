@@ -2,6 +2,9 @@
   "name": "njwt",
   "version": "1.1.0",
   "description": "JWT Library for Node.js",
+  "engines": {
+    "node": ">=6.0"
+  },
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
@@ -28,7 +31,7 @@
   "dependencies": {
     "@types/node": "^15.0.1",
     "ecdsa-sig-formatter": "^1.0.5",
-    "uuid": "^3.3.2"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.22.0",
