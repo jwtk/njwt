@@ -1,5 +1,9 @@
 # nJwt Change Log
 
+### 1.2.0
+
+* [#84] (https://github.com/jwtk/njwt/pull/84) Resolves `uuid` vulnerability.
+
 ### 1.1.0
 
 * [#77](https://github.com/jwtk/njwt/pull/77) Adds TypeScript type definitions.
