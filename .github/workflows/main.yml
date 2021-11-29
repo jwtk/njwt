@@ -1,0 +1,26 @@
+name: CI
+
+# Controls when the workflow will run
+on:
+  push:
+    branches: # build any changes to main
+      - main
+    tags: # all tags
+      - '*'
+  pull_request: # build all PRs
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node_version: [10, 12, 14]
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '${{ matrix.node_version }}'
+    - run: npm install
+    - run: npm test
