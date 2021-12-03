@@ -41,7 +41,7 @@ describe('Verifier', function() {
       beforeEach(function() {
         callCount = 0;
         keyKid = '123';
-        signingKey = uuid();
+        signingKey = uuid.v4();
         keyResolver = function(kid, cb) {
           callCount++;
           assert(kid === keyKid);

@@ -10,28 +10,28 @@ describe('Jwt',function() {
 
   describe('.setClaim()',function(){
     it('should set a claim on the claims body',function(){
-      var myClaim = uuid();
+      var myClaim = uuid.v4();
       assert.equal(nJwt.Jwt().setClaim('myClaim', myClaim).body.myClaim,myClaim);
     });
   });
 
   describe('.setHeader()',function(){
     it('should set a header param on the header',function(){
-      var kid = uuid();
+      var kid = uuid.v4();
       assert.equal(nJwt.Jwt().setHeader('kid', kid).header.kid,kid);
     });
   });
 
   describe('.setSubject()',function(){
     it('should set the sub claim',function(){
-      var sub = uuid();
+      var sub = uuid.v4();
       assert.equal(nJwt.Jwt().setSubject(sub).body.sub,sub);
     });
   });
 
   describe('.setIssuer()',function(){
     it('should set the iss claim',function(){
-      var iss = uuid();
+      var iss = uuid.v4();
       assert.equal(nJwt.Jwt().setIssuer(iss).body.iss,iss);
     });
   });
@@ -52,9 +52,9 @@ describe('Jwt',function() {
       );
     });
     it('should allow me to remove the exp field',function(){
-      var jwt = nJwt.create({},uuid());
+      var jwt = nJwt.create({},uuid.v4());
       var oneHourFromNow = Math.floor(new Date().getTime()/1000) + (60*60);
-      assert.equal(nJwt.create({},uuid()).body.exp , oneHourFromNow);
+      assert.equal(nJwt.create({},uuid.v4()).body.exp , oneHourFromNow);
       assert.equal(jwt.setExpiration().body.exp, undefined);
       assert.equal(jwt.setExpiration(false).body.exp, undefined);
       assert.equal(jwt.setExpiration(null).body.exp, undefined);
@@ -79,9 +79,9 @@ describe('Jwt',function() {
       );
     });
     it('should allow me to remove the nbf field',function(){
-      var jwt = nJwt.create({},uuid());
+      var jwt = nJwt.create({},uuid.v4());
       var oneHourFromNow = Math.floor(new Date().getTime()/1000) + (60*60);
-      assert.equal(nJwt.create({},uuid()).body.nbf , undefined);
+      assert.equal(nJwt.create({},uuid.v4()).body.nbf , undefined);
       assert.equal(jwt.setNotBefore().body.nbf, undefined);
       assert.equal(jwt.setNotBefore(false).body.nbf, undefined);
       assert.equal(jwt.setNotBefore(null).body.nbf, undefined);
@@ -107,7 +107,7 @@ describe('Jwt',function() {
   });
   describe('.toString()',function(){
     it('should return the compacted JWT string',function(){
-      var jwt = nJwt.create({},uuid());
+      var jwt = nJwt.create({},uuid.v4());
       assert.equal(jwt.compact(),jwt.toString());
     });
   });
