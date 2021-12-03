@@ -27,7 +27,8 @@
   "homepage": "https://github.com/jwtk/njwt",
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "properties.json"
   ],
   "dependencies": {
     "@types/node": "^15.0.1",
