@@ -1,5 +1,9 @@
 # nJwt Change Log
 
+### 1.2.1
+
+* Added support for skip validate the expiration of the token, use `nJwt.createVerifier().setIgnoreExpiration(true)`
+
 ### 1.2.0
 
 * [#84] (https://github.com/jwtk/njwt/pull/84) Resolves `uuid` vulnerability.

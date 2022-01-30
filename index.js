@@ -338,6 +338,10 @@ Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
 Verifier.prototype.setKeyResolver = function setKeyResolver(keyResolver) {
   this.keyResolver = keyResolver.bind(this);
 };
+Verifier.prototype.setIgnoreExpiration = function setIgnoreExpiration(ignoreExpiration) {
+  this.ignoreExpiration = ignoreExpiration;
+  return this;
+};
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
 
 Verifier.prototype.verify = function verify(jwtString,cb){
@@ -362,7 +366,7 @@ Verifier.prototype.verify = function verify(jwtString,cb){
     return done(new JwtParseError(properties.errors.SIGNATURE_ALGORITHM_MISMTACH,jwtString,header,body));
   }
 
-  if (jwt.isExpired()) {
+  if (!this.ignoreExpiration && jwt.isExpired()) {
     return done(new JwtParseError(properties.errors.EXPIRED,jwtString,header,body));
   }
 
