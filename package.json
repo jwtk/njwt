@@ -1,9 +1,9 @@
 {
   "name": "njwt",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "JWT Library for Node.js",
   "engines": {
-    "node": ">=6.0"
+    "node": ">=12.0"
   },
   "main": "index.js",
   "types": "index.d.ts",
@@ -40,11 +40,11 @@
     "coveralls": "^3.0.3",
     "eslint": "^7.25.0",
     "istanbul": "^0.4.5",
-    "jsonwebtoken": "^8.5.0",
+    "jsonwebtoken": "^9.0.0",
     "jwt-simple": "^0.5.5",
-    "mocha": "^6.0.2",
+    "mocha": "^10.2.0",
     "secure-random": "^1.1.1",
-    "tsd": "^0.14.0",
+    "tsd": "^0.25.0",
     "typescript": "^4.2.4"
   },
   "tsd": {
