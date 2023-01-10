@@ -1,8 +1,12 @@
 # nJwt Change Log
 
+### 2.0.0
+
+* [#98](https://github.com/jwtk/njwt/pull/98) Bumps jsonwebtoken version, drop Node < 12 from engines
+
 ### 1.2.0
 
-* [#84] (https://github.com/jwtk/njwt/pull/84) Resolves `uuid` vulnerability.
+* [#84](https://github.com/jwtk/njwt/pull/84) Resolves `uuid` vulnerability.
 
 ### 1.1.0
 
