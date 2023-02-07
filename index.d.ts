@@ -42,7 +42,7 @@ export declare class Jwt {
     setSubject(sub: string): Jwt;
     setIssuer(iss: string): Jwt;
     setIssuedAt(iat: number): Jwt;
-    setExpiration(exp: Date | number | string): Jwt;
+    setExpiration(exp?: Date | number | string): Jwt;
     setNotBefore(nbf: Date | number | string): Jwt;
     setSigningKey(key: string | Buffer): Jwt;
     signingKey: string | Buffer;
