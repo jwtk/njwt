@@ -29,6 +29,11 @@
     "url": "https://github.com/jwtk/njwt/issues"
   },
   "homepage": "https://github.com/jwtk/njwt",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "properties.json"
+  ],
   "dependencies": {
     "@types/node": "^15.0.1",
     "ecdsa-sig-formatter": "^1.0.5",
