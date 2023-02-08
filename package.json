@@ -59,5 +59,10 @@
         ]
       }
     }
-  }
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "properties.json"
+  ]
 }
