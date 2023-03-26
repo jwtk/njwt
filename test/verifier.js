@@ -148,6 +148,17 @@ describe('Verifier().verify() ',function(){
     });
   });
 
+  it('should NOT return the jwt string, header and body on error objects with not active message since nbfTolerance is set',function(done){
+    var jwt = new nJwt.Jwt({notActiveToken:uuid()})
+      .setNotBefore(new Date().getTime()+1000)
+    var token = jwt.compact();
+    nJwt.verify(token,null,null,1000,function(err){
+      assert.isNull(err);
+      assert.isNotNull(token);
+      done();
+    });
+  });
+
   it('should return the jwt string, header and body with null error objects',function(done){
     var jwt = new nJwt.Jwt({notActiveToken:uuid.v4()});
     var token = jwt.compact();
