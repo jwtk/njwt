@@ -1,5 +1,12 @@
 # nJwt Change Log
 
+### 3.0.0
+
+* [#102](https://github.com/jwtk/njwt/pull/102) Breaking changes:
+  - Changes `setIssuedAt` method signature to accept Date or milliseconds as input to be consistent with `setExpiration` and `setNotBefore`
+  - Excludes `test` folder from the release package
+
+
 ### 2.0.0
 
 * [#98](https://github.com/jwtk/njwt/pull/98) Bumps jsonwebtoken version, drop Node < 12 from engines
