@@ -5,7 +5,14 @@
   "engines": {
     "node": ">=12.0"
   },
-  "files": ["index.js","index.d.ts","properties.json","CHANGELOG.md","README.md","test"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "properties.json",
+    "CHANGELOG.md",
+    "README.md",
+    "test"
+  ],
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
