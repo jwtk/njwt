@@ -13,6 +13,7 @@ const jwt = new Jwt({}, true);
 expectType<string>(jwt.sign({}, 'alg', 'signingKeyValue'));
 expectType<Jwt>(jwt.setHeader('headerParam', 'headerValue'));
 expectType<Jwt>(jwt.setIssuedAt(123456));
+expectType<Jwt>(jwt.setIssuedAt(new Date()));
 expectType<Jwt>(jwt.setIssuer('atko'));
 expectType<Jwt>(jwt.setJti('uuid'));
 expectType<Jwt>(jwt.setNotBefore(new Date()));

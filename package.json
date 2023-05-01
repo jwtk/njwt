@@ -1,11 +1,17 @@
 {
   "name": "njwt",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "JWT Library for Node.js",
   "engines": {
     "node": ">=12.0"
   },
-  "files": ["index.js","index.d.ts","properties.json","CHANGELOG.md","README.md","test"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "properties.json",
+    "CHANGELOG.md",
+    "README.md"
+  ],
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {

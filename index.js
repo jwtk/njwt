@@ -153,7 +153,7 @@ function Jwt(claims, enforceDefaultFields){
     }
 
     if (!this.body.iat) {
-      this.setIssuedAt(nowEpochSeconds());
+      this.setIssuedAt(new Date().getTime());
     }
   }
 
@@ -180,7 +180,11 @@ Jwt.prototype.setIssuer = function setIssuer(iss) {
   return this;
 };
 Jwt.prototype.setIssuedAt = function setIssuedAt(iat) {
-  this.body.iat = iat;
+  if(iat){
+    this.body.iat = Math.floor((iat instanceof Date ? iat : new Date(iat)).getTime() / 1000);
+  }else{
+    delete this.body.iat;
+  }
   return this;
 };
 Jwt.prototype.setExpiration = function setExpiration(exp) {
