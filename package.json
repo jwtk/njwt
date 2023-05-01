@@ -10,8 +10,7 @@
     "index.d.ts",
     "properties.json",
     "CHANGELOG.md",
-    "README.md",
-    "test"
+    "README.md"
   ],
   "main": "index.js",
   "types": "index.d.ts",
