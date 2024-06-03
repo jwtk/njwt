@@ -113,6 +113,7 @@ JwtBody.prototype.compact = function compact(){
   return base64urlEncode(JSON.stringify(this));
 };
 
+var reservedHeaderKeys = ['typ','alg'];
 function JwtHeader(header){
   if(!(this instanceof JwtHeader)){
     return new JwtHeader(header);
@@ -123,7 +124,7 @@ function JwtHeader(header){
 
   if(header){
     return Object.keys(header).reduce(function(acc,key){
-      if(self.reservedKeys.indexOf(key)===-1 && header.hasOwnProperty(key)){
+      if(reservedHeaderKeys.indexOf(key)===-1 && header.hasOwnProperty(key)){
         acc[key] = header[key];
       }
       return acc;
@@ -132,7 +133,6 @@ function JwtHeader(header){
     return this;
   }
 }
-JwtHeader.prototype.reservedKeys = ['typ','alg'];
 JwtHeader.prototype.compact = function compact(){
   return base64urlEncode(JSON.stringify(this));
 };
@@ -259,6 +259,9 @@ Jwt.prototype.compact = function compact() {
 };
 
 Jwt.prototype.toString = function(){
+  if (this.__originalString) {
+    return this.__originalString;
+  }
   return this.compact();
 };
 
@@ -409,9 +412,12 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
     var newJwt = new Jwt(body, false);
 
-    newJwt.toString = function () {
-      return jwtString;
-    };
+    // since prototype is now frozen, .toString can no longer be overloaded
+    // newJwt.toString = function () {
+    //   return jwtString;
+    // };
+    // set this new property, which will be returned by Jwt.toString, if defined
+    newJwt.__originalString = jwtString;
 
     newJwt.header = new JwtHeader(header);
 
@@ -427,6 +433,22 @@ Verifier.prototype.withKeyResolver = function withKeyResolver(keyResolver) {
   this.keyResolver = keyResolver;
   return this;
 };
+
+// vuln: https://security.snyk.io/vuln/SNYK-JS-NJWT-6861582
+// Object.freeze(Jwt);
+// Object.freeze(Jwt.prototype);
+// Object.freeze(JwtBody);
+// Object.freeze(JwtBody.prototype);
+// Object.freeze(JwtHeader);
+// Object.freeze(JwtHeader.prototype);
+// Object.freeze(Verifier);
+// Object.freeze(Verifier.prototype);
+// Object.freeze(Parser);
+// Object.freeze(Parser.prototype);
+// Object.freeze(JwtParseError);
+// Object.freeze(JwtParseError.prototype);
+// Object.freeze(JwtError);
+// Object.freeze(JwtError.prototype);
 
 var jwtLib = {
   Jwt: Jwt,
