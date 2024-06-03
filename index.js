@@ -114,14 +114,13 @@ JwtBody.prototype.compact = function compact(){
 };
 
 var reservedHeaderKeys = ['typ','alg'];
-function JwtHeader(header, ignoreDefaults){
+function JwtHeader(header, enforceDefaultFields){
   if(!(this instanceof JwtHeader)){
     return new JwtHeader(header);
   }
-  var self = this;
   this.typ = header && header.typ;
   this.alg = header && header.alg;
-  if (!ignoreDefaults) {
+  if (enforceDefaultFields !== false) {
     this.typ = this.typ || 'JWT';
     this.alg = this.alg || 'HS256';
   }
@@ -263,9 +262,6 @@ Jwt.prototype.compact = function compact() {
 };
 
 Jwt.prototype.toString = function(){
-  if (this.__originalString) {
-    return this.__originalString;
-  }
   return this.compact();
 };
 
@@ -319,7 +315,7 @@ Parser.prototype.parse = function parse(jwtString,cb){
   jwt.setSigningAlgorithm(header.alg);
   jwt.signature = signature;
   jwt.verificationInput = segments[0] +'.' + segments[1];
-  jwt.header = new JwtHeader(header, true);
+  jwt.header = new JwtHeader(header, false);
   return done(null,jwt);
 };
 
@@ -421,7 +417,7 @@ Verifier.prototype.verify = function verify(jwtString,cb){
     //   return jwtString;
     // };
 
-    newJwt.header = new JwtHeader(header, true);
+    newJwt.header = new JwtHeader(header, false);
 
     if (!verified) {
       return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body));
