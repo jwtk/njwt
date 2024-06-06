@@ -1,6 +1,6 @@
 {
   "name": "njwt",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "JWT Library for Node.js",
   "engines": {
     "node": ">=12.0"
