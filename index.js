@@ -113,17 +113,21 @@ JwtBody.prototype.compact = function compact(){
   return base64urlEncode(JSON.stringify(this));
 };
 
-function JwtHeader(header){
+var reservedHeaderKeys = ['typ','alg'];
+function JwtHeader(header, enforceDefaultFields){
   if(!(this instanceof JwtHeader)){
     return new JwtHeader(header);
   }
-  var self = this;
-  this.typ = header && header.typ || 'JWT';
-  this.alg = header && header.alg || 'HS256';
+  this.typ = header && header.typ;
+  this.alg = header && header.alg;
+  if (enforceDefaultFields !== false) {
+    this.typ = this.typ || 'JWT';
+    this.alg = this.alg || 'HS256';
+  }
 
   if(header){
     return Object.keys(header).reduce(function(acc,key){
-      if(self.reservedKeys.indexOf(key)===-1 && header.hasOwnProperty(key)){
+      if(reservedHeaderKeys.indexOf(key)===-1 && header.hasOwnProperty(key)){
         acc[key] = header[key];
       }
       return acc;
@@ -132,7 +136,6 @@ function JwtHeader(header){
     return this;
   }
 }
-JwtHeader.prototype.reservedKeys = ['typ','alg'];
 JwtHeader.prototype.compact = function compact(){
   return base64urlEncode(JSON.stringify(this));
 };
@@ -312,7 +315,7 @@ Parser.prototype.parse = function parse(jwtString,cb){
   jwt.setSigningAlgorithm(header.alg);
   jwt.signature = signature;
   jwt.verificationInput = segments[0] +'.' + segments[1];
-  jwt.header = new JwtHeader(header);
+  jwt.header = new JwtHeader(header, false);
   return done(null,jwt);
 };
 
@@ -409,11 +412,12 @@ Verifier.prototype.verify = function verify(jwtString,cb){
 
     var newJwt = new Jwt(body, false);
 
-    newJwt.toString = function () {
-      return jwtString;
-    };
+    // since prototype is now frozen, .toString can no longer be overloaded
+    // newJwt.toString = function () {
+    //   return jwtString;
+    // };
 
-    newJwt.header = new JwtHeader(header);
+    newJwt.header = new JwtHeader(header, false);
 
     if (!verified) {
       return done(new JwtParseError(properties.errors.SIGNATURE_MISMTACH,jwtString,header,body));
@@ -427,6 +431,22 @@ Verifier.prototype.withKeyResolver = function withKeyResolver(keyResolver) {
   this.keyResolver = keyResolver;
   return this;
 };
+
+// vuln: https://security.snyk.io/vuln/SNYK-JS-NJWT-6861582
+Object.freeze(Jwt);
+Object.freeze(Jwt.prototype);
+Object.freeze(JwtBody);
+Object.freeze(JwtBody.prototype);
+Object.freeze(JwtHeader);
+Object.freeze(JwtHeader.prototype);
+Object.freeze(Verifier);
+Object.freeze(Verifier.prototype);
+Object.freeze(Parser);
+Object.freeze(Parser.prototype);
+Object.freeze(JwtParseError);
+Object.freeze(JwtParseError.prototype);
+Object.freeze(JwtError);
+Object.freeze(JwtError.prototype);
 
 var jwtLib = {
   Jwt: Jwt,

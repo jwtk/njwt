@@ -61,12 +61,11 @@ export declare class JwtBody {
   toJSON(): JSONMap;
   compact(): string;
 }
-export declare function JwtHeader(header: JwtHeaderOptions): JwtHeader;
+export declare function JwtHeader(header: JwtHeaderOptions, enforceDefaultFields?: boolean): JwtHeader;
 export declare class JwtHeader {
-  constructor(header: JwtHeaderOptions);
+  constructor(header: JwtHeaderOptions, enforceDefaultFields?: boolean);
     typ: string;
     alg: string;
-    reservedKeys: string[];
     compact(): string;
 }
 

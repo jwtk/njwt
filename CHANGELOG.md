@@ -1,5 +1,9 @@
 # nJwt Change Log
 
+### 2.0.1
+
+* [#107](https://github.com/jwtk/njwt/pull/107) Freeze `prototype` of all classes to prevent prototype pollution vuln ([CVE-2024-34273](https://cve.mitre.org/cgi-bin/cvename.cgi?name=2024-34273))
+
 ### 2.0.0
 
 * [#98](https://github.com/jwtk/njwt/pull/98) Bumps jsonwebtoken version, drop Node < 12 from engines
