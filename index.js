@@ -269,8 +269,8 @@ Jwt.prototype.isExpired = function() {
   return new Date(this.body.exp*1000) < new Date();
 };
 
-Jwt.prototype.isNotBefore = function() {
-  return new Date(this.body.nbf * 1000) >= new Date();
+Jwt.prototype.isNotBefore = function(ms) {
+  return new Date((this.body.nbf * 1000) - ms) >= new Date();
 };
 
 function Parser(options){
@@ -325,6 +325,7 @@ function Verifier(){
   }
   this.setSigningAlgorithm('HS256');
   this.setKeyResolver(defaultKeyResolver.bind(this));
+  this.nbfTolerance = 0;
   return this;
 }
 Verifier.prototype.setSigningAlgorithm = function setSigningAlgorithm(alg) {
@@ -340,6 +341,10 @@ Verifier.prototype.setSigningKey = function setSigningKey(keyStr) {
 };
 Verifier.prototype.setKeyResolver = function setKeyResolver(keyResolver) {
   this.keyResolver = keyResolver.bind(this);
+};
+Verifier.prototype.setNbfTolerance = function setNbfTolerance(ms) {
+  this.nbfTolerance = ms;
+  return this;
 };
 Verifier.prototype.isSupportedAlg = isSupportedAlg;
 
@@ -369,7 +374,7 @@ Verifier.prototype.verify = function verify(jwtString,cb){
     return done(new JwtParseError(properties.errors.EXPIRED,jwtString,header,body));
   }
 
-  if (jwt.isNotBefore()) {
+  if (jwt.isNotBefore(this.nbfTolerance)) {
     return done(new JwtParseError(properties.errors.NOT_ACTIVE,jwtString,header,body));
   }
 
@@ -455,12 +460,28 @@ var jwtLib = {
   Verifier: Verifier,
   base64urlEncode: base64urlEncode,
   base64urlUnescape:base64urlUnescape,
-  verify: function(/*jwtTokenString, [signingKey], [algOverride], [callbck] */){
+  verify: function(/*jwtTokenString, [signingKey], [algOverride], [nbfTolerance], [callback] */){
 
     var args = Array.prototype.slice.call(arguments);
     var cb = typeof args[args.length-1] === 'function' ? args.pop() : null;
 
     var verifier = new Verifier();
+
+    if(args.length===4){
+      verifier.setNbfTolerance(args[3]);
+
+      if(args[2]==null){
+        verifier.setSigningAlgorithm('none');
+      }else{
+        verifier.setSigningAlgorithm(args[2]);
+      }
+
+      if(args[1]==null){
+        verifier.setSigningKey('');
+      }else{
+        verifier.setSigningKey(args[1]);
+      }
+    }
 
     if(args.length===3){
       verifier.setSigningAlgorithm(args[2]);
