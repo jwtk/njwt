@@ -166,7 +166,7 @@ nJwt.verify(token,signingKey, 'HS512');
 ````
 
 See the table below for a list of supported algorithms.  If using RSA key pairs,
-the public key will be the signing key parameter.
+the private key will be the signing key parameter.
 
 ### Customizing the token
 
