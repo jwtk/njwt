@@ -274,6 +274,9 @@ Jwt.prototype.isNotBefore = function() {
 };
 
 function Parser(options){
+  if(!(this instanceof Parser)){
+    return new Parser(options);
+  }
   return this;
 }
 
@@ -452,6 +455,7 @@ var jwtLib = {
   Jwt: Jwt,
   JwtBody: JwtBody,
   JwtHeader: JwtHeader,
+  Parser: Parser,
   Verifier: Verifier,
   base64urlEncode: base64urlEncode,
   base64urlUnescape:base64urlUnescape,
