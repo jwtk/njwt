@@ -18,7 +18,9 @@ describe('JWT Builder',function(){
       .setSigningAlgorithm('RS256')
       .setSigningKey(pair.private)
       .compact();
-    var verifier = new nJwt.Verifier().setSigningKey('RS256',pair.public);
+    var verifier = new nJwt.Verifier()
+      .setSigningAlgorithm('RS256')
+      .setSigningKey(pair.public);
     var result;
     before(function(done){
       verifier.verify(token,function(err,res){
@@ -28,6 +30,7 @@ describe('JWT Builder',function(){
     });
     it('should create the token with the appropriate header values',function(){
       assert.isNotNull(token);
+      assert.isNull(result[0],'An unexpected error was returned from the verifier');
     });
   });
 });
